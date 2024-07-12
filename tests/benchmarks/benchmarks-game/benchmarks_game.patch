@@ -1,0 +1,147 @@
+diff --git a/src/binary-trees.c b/src/binary-trees.c
+index 5e57df5..24efdda 100644
+--- a/src/binary-trees.c
++++ b/src/binary-trees.c
+@@ -10,19 +10,17 @@ typedef struct tree_node {
+ static tree_node *create_Tree(const uint32_t tree_Depth) {
+   tree_node *const root_Node = malloc(sizeof(tree_node));
+   if (root_Node == NULL) {
+-    printf("out of memory at %" PRIu32 ", memory:%" PRIu32 "\n", tree_Depth,
+-#ifdef __wasm__
+-           (uint32_t)__builtin_wasm_memory_size(0)
+-#else
+-           0
+-#endif
+-    );
+-    return root_Node;
++    printf("out of memory at %" PRIu32 "\n", tree_Depth);
++    return NULL;
+   }
+ 
+   if (tree_Depth > 0) {
+     root_Node->left_Node = create_Tree(tree_Depth - 1);
++    if (!root_Node->left_Node)
++        return NULL;
+     root_Node->right_Node = create_Tree(tree_Depth - 1);
++    if (!root_Node->right_Node)
++        return NULL;
+   } else {
+     root_Node->left_Node = root_Node->right_Node = NULL;
+   }
+@@ -47,11 +45,18 @@ static uint32_t compute_Tree_Checksum(const tree_node *const root_Node) {
+ }
+ 
+ int main(int argc, char *argv[]) {
++  if (argc < 2) {
++      printf("Usage: %s tree_depth\n", argv[0]);
++      return -1;
++  }
+   const uint32_t minimum_Tree_Depth = 4,
+                  maximum_Tree_Depth = atoi(argv[1]) < minimum_Tree_Depth + 2
+                                           ? minimum_Tree_Depth + 2
+                                           : atoi(argv[1]);
+   tree_node *stretch_Tree = create_Tree(maximum_Tree_Depth + 1);
++  if (!stretch_Tree) {
++      return -2;
++  }
+   printf("stretch tree of depth %" PRIu32 "\t check: %" PRIu32 "\n",
+          maximum_Tree_Depth + 1, compute_Tree_Checksum(stretch_Tree));
+   delete_Tree(stretch_Tree);
+diff --git a/src/fannkuch-redux.c b/src/fannkuch-redux.c
+index 1e930d8..b935a4a 100644
+--- a/src/fannkuch-redux.c
++++ b/src/fannkuch-redux.c
+@@ -5,6 +5,11 @@
+ #include <stdlib.h>
+ 
+ int main(int argc, char **argv) {
++  if (argc < 2) {
++      printf("Usage: %s n\n", argv[0]);
++      return -1;
++  }
++
+   const int n = atoi(argv[1]);
+ 
+   int factorial_Lookup_Table[n + 1];
+diff --git a/src/fasta.c b/src/fasta.c
+index cddedf8..849a4b3 100644
+--- a/src/fasta.c
++++ b/src/fasta.c
+@@ -224,6 +224,11 @@ generate_And_Wrap_Pseudorandom_DNA_Sequence(const nucleotide_info nucl_info[],
+ }
+ 
+ int main(int argc, char **argv) {
++  if (argc < 2) {
++      printf("Usage: %s n\n", argv[0]);
++      return -1;
++  }
++
+   const int n = atoi(argv[1]);
+ 
+   fputs(">ONE Homo sapiens alu\n", stdout);
+diff --git a/src/mandelbrot-simd.c b/src/mandelbrot-simd.c
+index 8013cd9..869f925 100644
+--- a/src/mandelbrot-simd.c
++++ b/src/mandelbrot-simd.c
+@@ -75,6 +75,11 @@ static inline uint64_t mand64(const doublex2 init_r[4], const doublex2 init_i) {
+ }
+ 
+ int main(int argc, char **argv) {
++  if (argc < 2) {
++      printf("Usage: %s n\n", argv[0]);
++      return -1;
++  }
++
+   const uint64_t image_Width_And_Height =
+       (__builtin_expect(atoi(argv[1]), 15000) + 7) / 8 * 8;
+ 
+@@ -116,7 +121,7 @@ int main(int argc, char **argv) {
+     }
+   }
+ 
+-  fprintf(stdout, "P4\n%" PRIu64 " %" PRIu64 "\n", image_Width_And_Height,
++  printf("P4\n%" PRIu64 " %" PRIu64 "\n", image_Width_And_Height,
+           image_Width_And_Height);
+   fwrite(pixels, image_Width_And_Height * image_Width_And_Height / 8, 1,
+          stdout);
+diff --git a/src/mandelbrot.c b/src/mandelbrot.c
+index a2d3fca..853ce25 100644
+--- a/src/mandelbrot.c
++++ b/src/mandelbrot.c
+@@ -7,6 +7,11 @@
+ #include <stdlib.h>
+ 
+ int main(int argc, char **argv) {
++  if (argc < 2) {
++      printf("Usage: %s n\n", argv[0]);
++      return -1;
++  }
++
+   const uint64_t image_Width_And_Height =
+       (__builtin_expect(atoi(argv[1]), 15000) + 7) / 8 * 8;
+ 
+@@ -52,7 +57,7 @@ int main(int argc, char **argv) {
+     }
+   }
+ 
+-  fprintf(stdout, "P4\n%" PRIu64 " %" PRIu64 "\n", image_Width_And_Height,
++  printf("P4\n%" PRIu64 " %" PRIu64 "\n", image_Width_And_Height,
+           image_Width_And_Height);
+   fwrite(pixels, image_Width_And_Height * image_Width_And_Height / 8, 1,
+          stdout);
+diff --git a/src/nbody.c b/src/nbody.c
+index 0ccb968..e7dd9fd 100644
+--- a/src/nbody.c
++++ b/src/nbody.c
+@@ -112,6 +112,11 @@ static void output_Energy(body bodies[]) {
+ }
+ 
+ int main(int argc, char *argv[]) {
++  if (argc < 2) {
++      printf("Usage: %s n\n", argv[0]);
++      return -1;
++  }
++
+   offset_Momentum(solar_Bodies);
+   output_Energy(solar_Bodies);
+   for (int n = atoi(argv[1]); n--; advance(solar_Bodies))
