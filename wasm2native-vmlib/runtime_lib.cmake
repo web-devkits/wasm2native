@@ -41,6 +41,7 @@ include (${CMAKE_CURRENT_LIST_DIR}/config_common.cmake)
 include_directories (${IWASM_DIR}/include)
 include_directories (${IWASM_DIR}/interpreter)
 
+option(EXCLUDE_PTREHAD_SROUCE "Exclude pthread from sources" ON)
 include (${SHARED_DIR}/platform/${W2N_BUILD_PLATFORM}/shared_platform.cmake)
 include (${SHARED_DIR}/utils/shared_utils.cmake)
 include (${SHARED_DIR}/mem-alloc/mem_alloc.cmake)

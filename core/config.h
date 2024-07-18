@@ -85,4 +85,9 @@
 #endif
 #define BLOCK_ADDR_CONFLICT_SIZE 2
 
+/* Default enable pthread */
+#ifndef W2N_ENABLE_PTHREAD
+#define W2N_ENABLE_PTHREAD 1
+#endif
+
 #endif /* end of _CONFIG_H_ */

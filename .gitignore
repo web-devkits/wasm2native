@@ -1,0 +1,5 @@
+build/
+out/
+core/deps/llvm/
+tests/benchmarks/coremark/coremark/
+tests/benchmarks/benchmarks-game/wasm32-wasi-benchmark/
