@@ -21,7 +21,7 @@ void
 bh_log(LogLevel log_level, const char *file, int line, const char *fmt, ...)
 {
     va_list ap;
-#if W2N_ENABLE_PTHREAD == 1
+#if W2N_ENABLE_PTHREAD != 0
     korp_tid self;
 #endif
     char buf[32] = { 0 };
@@ -31,7 +31,7 @@ bh_log(LogLevel log_level, const char *file, int line, const char *fmt, ...)
     if ((uint32)log_level > log_verbose_level)
         return;
 
-#if W2N_ENABLE_PTHREAD == 1
+#if W2N_ENABLE_PTHREAD != 0
     self = os_self_thread();
 #endif
 
@@ -47,7 +47,7 @@ bh_log(LogLevel log_level, const char *file, int line, const char *fmt, ...)
              "%02" PRIu32 ":%02" PRIu32 ":%02" PRIu32 ":%03" PRIu32, h, m, s,
              mills);
 
-#if W2N_ENABLE_PTHREAD == 1 && !defined(BH_VPRINTF)
+#if W2N_ENABLE_PTHREAD != 0 && !defined(BH_VPRINTF)
     os_printf("[%s - %" PRIXPTR "]: ", buf, (uintptr_t)self);
 #endif
 
