@@ -21,7 +21,9 @@ void
 bh_log(LogLevel log_level, const char *file, int line, const char *fmt, ...)
 {
     va_list ap;
+#if W2N_ENABLE_PTHREAD == 1
     korp_tid self;
+#endif
     char buf[32] = { 0 };
     uint64 usec;
     uint32 t, h, m, s, mills;
@@ -29,7 +31,9 @@ bh_log(LogLevel log_level, const char *file, int line, const char *fmt, ...)
     if ((uint32)log_level > log_verbose_level)
         return;
 
+#if W2N_ENABLE_PTHREAD == 1
     self = os_self_thread();
+#endif
 
     usec = os_time_get_boot_us();
     t = (uint32)(usec / 1000000) % (24 * 60 * 60);
@@ -43,7 +47,7 @@ bh_log(LogLevel log_level, const char *file, int line, const char *fmt, ...)
              "%02" PRIu32 ":%02" PRIu32 ":%02" PRIu32 ":%03" PRIu32, h, m, s,
              mills);
 
-#ifndef BH_VPRINTF
+#if W2N_ENABLE_PTHREAD == 1 && !defined(BH_VPRINTF)
     os_printf("[%s - %" PRIXPTR "]: ", buf, (uintptr_t)self);
 #endif
 
