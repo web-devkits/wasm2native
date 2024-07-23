@@ -10,7 +10,9 @@ wasm2native allows to compile the WebAssembly file into a native object file, an
 - sandbox mode: the wasm sandbox is kept, and the wasm address space and native address space are different
 - [no-sandbox mode](https://github.com/AndroidWasm/wabt/tree/main/wasm2c#no-sandbox-mode-experimental), the wasm sandbox is discarded but it allows sharing pointers (both memory pointers and function pointers) between wasm and native, and the address space is the same in wasm and native.
 
-![compilation pipeline](./doc/images/compilation_pipeline.svg){ width=500px height=100px }
+<img src="./doc/images/compilation_pipeline.svg" width="500" height="100" />
+
+![compilation pipeline](./doc/images/compilation_pipeline.svg)
 
 ### Getting started
 - [Build wasm2native](./wasm2native-compiler/README.md)
