@@ -6,7 +6,7 @@
 </div>
 
 ### Overview
-wasm2native allows to compile the WebAssembly file into a native object file, and then link it with an auxiliary library into the native binary, e.g., executable file, shared library or static library. It removes the wasm runtime dependency and provides two modes:
+wasm2native allows developer to compile the WebAssembly file into a native object file, and then link it with an auxiliary library into a native binary, e.g., executable file, shared library or static library. It removes the wasm runtime dependency and provides two modes:
 - sandbox mode: the wasm sandbox is kept, and the wasm address space and native address space are different
 - [no-sandbox mode](https://github.com/AndroidWasm/wabt/tree/main/wasm2c#no-sandbox-mode-experimental), the wasm sandbox is discarded but it allows sharing pointers (both memory pointers and function pointers) between wasm and native, and the address space is the same in wasm and native.
 

@@ -1,6 +1,6 @@
 ### Pre-requisites
 
-Refer to [wasm_ndk of AnroidWasm](https://github.com/AndroidWasm/wasm_ndk?tab=readme-ov-file#pre-requisites) to install the toolchainls. Note that when building the [Android Clang/LLVM Toolchain](https://android.googlesource.com/toolchain/llvm_android/+/master/README.md#android-clang_llvm-toolchain), apply the table64 patch to `llvm-toolchain/toolchain/llvm-project`: [[WebAssembly] Use 64-bit table when targeting wasm64](https://github.com/llvm/llvm-project/pull/92042) before the step `python toolchain/llvm_android/build.py`.
+Refer to [wasm_ndk of AnroidWasm](https://github.com/AndroidWasm/wasm_ndk?tab=readme-ov-file#pre-requisites) to install the toolchains. Note that when building the [Android Clang/LLVM Toolchain](https://android.googlesource.com/toolchain/llvm_android/+/master/README.md#android-clang_llvm-toolchain), apply the table64 patch to `llvm-toolchain/toolchain/llvm-project`: [[WebAssembly] Use 64-bit table when targeting wasm64](https://github.com/llvm/llvm-project/pull/92042) before the step `python toolchain/llvm_android/build.py`.
 
 Finally ensure that the below environment variables are set:
 ```bash

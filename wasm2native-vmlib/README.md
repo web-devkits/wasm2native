@@ -1,7 +1,7 @@
 ### Overview of the auxiliary lib
 
 The auxiliary lib provides extra functionalities for native binary:
-- For sandbox mode, it provides native API wrappers, memory allocator for host managed heap, and APIs to exectute the wasm functions in the native binary. The built out lib is libvmlib.a.
+- For sandbox mode, it provides native API wrappers, memory allocator for host managed heap, and APIs to execute the wasm functions in the native binary. The built out lib is libvmlib.a.
 - For no-sandbox mode, it only provides API wrappers. The built out lib is libnosandbox.a.
 
 ### Build the auxiliary lib
