@@ -6,26 +6,23 @@
 </div>
 
 ### Overview
-wasm2native allows to compile the wasm file into a native object file, which can be linked with an auxiliary library into a native binary, e.g. executable, shared library or static library. It removes the AOT runtime dependency and provides two modes: one is sandbox mode, in which the wasm sandbox is kept and the wasm address space and native address space are different. The other is [no-sandbox mode](](https://github.com/AndroidWasm/wabt/tree/main/wasm2c#no-sandbox-mode-experimental)), the wasm sandbox is discarded but it allows sharing pointers (both memory pointers and function pointers) between wasm and native, the address space is the same in wasm and native.
+wasm2native allows developer to compile the WebAssembly file into a native object file, and then link it with an auxiliary library into a native binary, e.g., executable file, shared library or static library. It removes the wasm runtime dependency and provides two modes:
+- sandbox mode: the wasm sandbox is kept, and the wasm address space and native address space are different
+- [no-sandbox mode](https://github.com/AndroidWasm/wabt/tree/main/wasm2c#no-sandbox-mode-experimental), the wasm sandbox is discarded but it allows sharing pointers (both memory pointers and function pointers) between wasm and native, and the address space is the same in wasm and native.
 
-### Pre-requisites
+<img src="./doc/images/compilation_pipeline.svg" width="1100" height="220" />
 
-Refer to [wasm_ndk of AnroidWasm](https://github.com/AndroidWasm/wasm_ndk?tab=readme-ov-file#pre-requisites) to install the toolchainls. Note that when building the [Android Clang/LLVM Toolchain](https://android.googlesource.com/toolchain/llvm_android/+/master/README.md#android-clang_llvm-toolchain), apply the table64 patch to `llvm-toolchain/toolchain/llvm-project`: [[WebAssembly] Use 64-bit table when targeting wasm64](https://github.com/llvm/llvm-project/pull/92042) before the step `python toolchain/llvm_android/build.py`.
+### Getting started
+- [Build wasm2native compiler](./wasm2native-compiler/README.md)
+- [Build auxiliary lib](./wasm2native-vmlib/README.md)
+- [Build wasm applications](./doc/build_wasm_app.md)
+- [Compile wasm applications to native binary](./doc/compile_wasm_app_to_native.md)
+- [Embed compiled native binary in C/C++](./doc/embed_compiled_native.md)
+- [Register native APIs for Wasm applications](./doc/register_native_api.md)
+- [Samples](./samples) and [Benchmarks](./tests/benchmarks)
 
-Finally ensure that the below environment variables are set:
-```bash
-export ANDROID_NDK_HOME=<path/to/android-ndk-r26d>
-export ANDROID_CLANG_TOOLCHAIN=<path/to/linux-x86/clang-dev>
-export WABT_HOME=<path/to/wabt>
-export WASM_NDK_ROOT=<path/to/wasm_ndk>
-```
-
-And install [wasi-sdk](https://github.com/WebAssembly/wasi-sdk/tags).
-
-### Build wasm2native compiler
-
-Refer to [wasm2compiler/README.md](./wasm2native-compiler/README.md) for how to build the wasm2native compiler.
-
-### Run benchmarks
-
-Change to each folder under [./tests/benchmarks](tests/benchmarks), then run `build.sh` to build the benchmarks and `run.sh` to run the benchmarks.
+License
+=======
+wasm2native uses the same license as LLVM: the `Apache 2.0 license` with the LLVM exception. See the LICENSE file for details.
+This license allows you to freely use, modify, distribute and sell your own products based on wasm2native.
+Any contributions you make will be under the same license.
