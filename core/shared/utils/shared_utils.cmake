@@ -7,4 +7,8 @@ include_directories(${UTILS_SHARED_DIR})
 
 file (GLOB source_all ${UTILS_SHARED_DIR}/*.c)
 
+if (EXCLUDE_PTREHAD_SROUCE)
+    add_compile_definitions(W2N_ENABLE_PTHREAD=0)
+endif()
+
 set (UTILS_SHARED_SOURCE ${source_all})

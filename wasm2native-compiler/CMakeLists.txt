@@ -180,6 +180,7 @@ include_directories (${SHARED_DIR}/include ${IWASM_DIR}/include)
 
 enable_language (ASM)
 
+option(EXCLUDE_PTREHAD_SROUCE "Exclude pthread from sources" OFF)
 include (${SHARED_DIR}/platform/${W2N_BUILD_PLATFORM}/shared_platform.cmake)
 include (${SHARED_DIR}/utils/shared_utils.cmake)
 include (${SHARED_DIR}/utils/uncommon/shared_uncommon.cmake)
