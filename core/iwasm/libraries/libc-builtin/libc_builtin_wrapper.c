@@ -1107,7 +1107,8 @@ uint32
 fwrite_wrapper(uint32 buf_offset, uint32 size, uint32 nmemb,
                uint32 stream_offset)
 {
-    if (size * nmemb < size || !validate_app_addr(buf_offset, size * nmemb))
+    if ((uint64)size * nmemb < size 
+        || !validate_app_addr(buf_offset, (uint64)size * nmemb))
         return 0;
 
     char *buf = addr_app_to_native(buf_offset);

@@ -3,3 +3,7 @@ out/
 core/deps/llvm/
 tests/benchmarks/coremark/coremark/
 tests/benchmarks/benchmarks-game/wasm32-wasi-benchmark/
+.gdb_history
+.vscode/
+.idea/
+cov-out/

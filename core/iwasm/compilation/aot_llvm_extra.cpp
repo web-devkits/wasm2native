@@ -122,16 +122,12 @@ aot_apply_llvm_new_pass_manager(AOTCompContext *comp_ctx, LLVMModuleRef module)
     PTO.SLPVectorization = true;
     PTO.LoopUnrolling = true;
 
-#if LLVM_VERSION_MAJOR >= 16
-    Optional<PGOOptions> PGO = std::nullopt;
-#else
-    Optional<PGOOptions> PGO = llvm::None;
-#endif
+    Optional<PGOOptions> PGO = Optional<PGOOptions>();
 
 #if LLVM_VERSION_MAJOR == 12
-    PassBuilder PB(false, TM, PTO, PGO);
+    PassBuilder PB(false, TM, PTO, std::move(PGO));
 #else
-    PassBuilder PB(TM, PTO, PGO);
+    PassBuilder PB(TM, PTO, std::move(PGO));
 #endif
 
     /* Register all the basic analyses with the managers */
@@ -244,4 +240,11 @@ aot_apply_llvm_new_pass_manager(AOTCompContext *comp_ctx, LLVMModuleRef module)
         }
 
     MPM.run(*M, MAM);
+}
+
+/* This allow APIs to pass LLVMModule argument to CreateGlobalStringPtr */
+LLVMValueRef LLVMBuildGlobalStringPtr_v2(LLVMBuilderRef B, const char *Str,
+                                         const char *Name, LLVMModuleRef module) {
+    Module *M = reinterpret_cast<Module *>(module);
+    return llvm::wrap(llvm::unwrap(B)->CreateGlobalStringPtr(Str, Name, 0, M));
 }

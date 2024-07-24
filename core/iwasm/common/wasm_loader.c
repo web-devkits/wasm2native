@@ -3081,7 +3081,7 @@ load_from_sections(WASMModule *module, WASMSection *sections,
                     aux_heap_base_global = global;
                     aux_heap_base = (uint64)global->init_expr.u.u32;
                     aux_heap_base_global_index = export->index;
-                    LOG_VERBOSE("Found aux __heap_base global, value: %d",
+                    LOG_VERBOSE("Found aux __heap_base global, value: %" PRIu64,
                                 aux_heap_base);
                 }
             }
@@ -3094,7 +3094,7 @@ load_from_sections(WASMModule *module, WASMSection *sections,
                     aux_data_end_global = global;
                     aux_data_end = (uint64)global->init_expr.u.u32;
                     aux_data_end_global_index = export->index;
-                    LOG_VERBOSE("Found aux __data_end global, value: %d",
+                    LOG_VERBOSE("Found aux __data_end global, value: %" PRIu64,
                                 aux_data_end);
 
                     aux_data_end = align_uint64(aux_data_end, 16);
@@ -3143,10 +3143,11 @@ load_from_sections(WASMModule *module, WASMSection *sections,
                             aux_stack_top > aux_data_end
                                 ? (uint32)(aux_stack_top - aux_data_end)
                                 : (uint32)aux_stack_top;
-                        LOG_VERBOSE("Found aux stack top global, value: %d, "
-                                    "global index: %d, stack size: %d",
-                                    aux_stack_top, global_index,
-                                    module->aux_stack_size);
+                        LOG_VERBOSE(
+                            "Found aux stack top global, value: %" PRIu64 ", "
+                            "global index: %d, stack size: %d",
+                            aux_stack_top, global_index,
+                            module->aux_stack_size);
                         break;
                     }
                 }
@@ -3292,7 +3293,7 @@ load_from_sections(WASMModule *module, WASMSection *sections,
                         /* Reset memory info to decrease memory usage */
                         memory_import->num_bytes_per_page = shrunk_memory_size;
                         memory_import->init_page_count = 1;
-                        LOG_VERBOSE("Shrink import memory size to %d",
+                        LOG_VERBOSE("Shrink import memory size to %" PRIu64,
                                     shrunk_memory_size);
                     }
                 }
@@ -3305,7 +3306,7 @@ load_from_sections(WASMModule *module, WASMSection *sections,
                         /* Reset memory info to decrease memory usage */
                         memory->num_bytes_per_page = shrunk_memory_size;
                         memory->init_page_count = 1;
-                        LOG_VERBOSE("Shrink memory size to %d",
+                        LOG_VERBOSE("Shrink memory size to %" PRIu64,
                                     shrunk_memory_size);
                     }
                 }
