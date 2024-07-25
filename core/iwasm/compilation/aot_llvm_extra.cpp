@@ -200,51 +200,53 @@ aot_apply_llvm_new_pass_manager(AOTCompContext *comp_ctx, LLVMModuleRef module)
     }
 
     ModulePassManager MPM;
-        FunctionPassManager FPM;
+    FunctionPassManager FPM;
 
-        /* Apply Vectorize related passes for AOT mode */
-        FPM.addPass(LoopVectorizePass());
-        FPM.addPass(SLPVectorizerPass());
-        FPM.addPass(LoadStoreVectorizerPass());
-        FPM.addPass(VectorCombinePass());
+    /* Apply Vectorize related passes for AOT mode */
+    FPM.addPass(LoopVectorizePass());
+    FPM.addPass(SLPVectorizerPass());
+    FPM.addPass(LoadStoreVectorizerPass());
+    FPM.addPass(VectorCombinePass());
 
-        /*
-        FPM.addPass(createFunctionToLoopPassAdaptor(LoopRotatePass()));
-        FPM.addPass(createFunctionToLoopPassAdaptor(SimpleLoopUnswitchPass()));
-        */
+    /*
+    FPM.addPass(createFunctionToLoopPassAdaptor(LoopRotatePass()));
+    FPM.addPass(createFunctionToLoopPassAdaptor(SimpleLoopUnswitchPass()));
+    */
 
-        MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+    MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
 
-        if (
+    if (
 #if LLVM_VERSION_MAJOR <= 13
-            PassBuilder::OptimizationLevel::O0 == OL
+        PassBuilder::OptimizationLevel::O0 == OL
 #else
-            OptimizationLevel::O0 == OL
+        OptimizationLevel::O0 == OL
 #endif
-        ) {
-            MPM.addPass(PB.buildO0DefaultPipeline(OL));
+    ) {
+        MPM.addPass(PB.buildO0DefaultPipeline(OL));
+    }
+    else {
+        if (!disable_llvm_lto) {
+            /* Apply LTO for AOT mode */
+            if (comp_ctx->comp_data->func_count >= 10)
+                /* Add the pre-link optimizations if the func count
+                   is large enough or PGO is enabled */
+                MPM.addPass(PB.buildLTOPreLinkDefaultPipeline(OL));
+            else
+                MPM.addPass(PB.buildLTODefaultPipeline(OL, NULL));
         }
         else {
-            if (!disable_llvm_lto) {
-                /* Apply LTO for AOT mode */
-                if (comp_ctx->comp_data->func_count >= 10)
-                    /* Add the pre-link optimizations if the func count
-                       is large enough or PGO is enabled */
-                    MPM.addPass(PB.buildLTOPreLinkDefaultPipeline(OL));
-                else
-                    MPM.addPass(PB.buildLTODefaultPipeline(OL, NULL));
-            }
-            else {
-                MPM.addPass(PB.buildPerModuleDefaultPipeline(OL));
-            }
+            MPM.addPass(PB.buildPerModuleDefaultPipeline(OL));
         }
+    }
 
     MPM.run(*M, MAM);
 }
 
 /* This allow APIs to pass LLVMModule argument to CreateGlobalStringPtr */
-LLVMValueRef LLVMBuildGlobalStringPtr_v2(LLVMBuilderRef B, const char *Str,
-                                         const char *Name, LLVMModuleRef module) {
+LLVMValueRef
+LLVMBuildGlobalStringPtr_v2(LLVMBuilderRef B, const char *Str, const char *Name,
+                            LLVMModuleRef module)
+{
     Module *M = reinterpret_cast<Module *>(module);
     return llvm::wrap(llvm::unwrap(B)->CreateGlobalStringPtr(Str, Name, 0, M));
 }

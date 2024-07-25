@@ -470,8 +470,7 @@ compile_int_div(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                     /* fall to default */
                     goto handle_default;
                 }
-            handle_default:
-                /* Fall through */
+            handle_default: /* Fall through */
             default:
                 /* Build div */
                 switch (arith_op) {
