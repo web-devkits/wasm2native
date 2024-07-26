@@ -336,6 +336,7 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
                       && table_init_data->offset.init_expr_type
                              == (is_table64 ? INIT_EXPR_TYPE_I64_CONST
                                             : INIT_EXPR_TYPE_I32_CONST));
+            (void)is_table64;
 
             for (k = 0; k < table_init_data->func_index_count; k++) {
                 uint32 table_elem_idx = table_init_data->offset.u.i32 + k;
@@ -794,7 +795,7 @@ static bool
 create_wasm_instance_create_func(const AOTCompData *comp_data,
                                  AOTCompContext *comp_ctx)
 {
-    LLVMTypeRef func_type, param_types[2] = { 0 }, func_ret_type;
+    LLVMTypeRef func_type, param_types[2] = { 0 };
     LLVMValueRef func, param_values[2], memory_data, cmp;
     LLVMValueRef exce_id_phi = NULL, exce_id, exce_id_global;
     LLVMValueRef memory_data_global;
@@ -814,9 +815,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
         return false;
     }
 
-    func_ret_type = comp_ctx->no_sandbox_mode ? VOID_TYPE : INT8_TYPE;
-
-    if (!(func_type = LLVMFunctionType(func_ret_type, NULL, 0, false))) {
+    if (!(func_type = LLVMFunctionType(VOID_TYPE, NULL, 0, false))) {
         aot_set_last_error("create LLVM function type failed.");
         return false;
     }
@@ -908,17 +907,9 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
             return false;
         }
 
-        if (comp_ctx->no_sandbox_mode) {
-            if (!LLVMBuildRetVoid(comp_ctx->builder)) {
-                aot_set_last_error("llvm build ret failed.");
-                return false;
-            }
-        }
-        else {
-            if (!LLVMBuildRet(comp_ctx->builder, I8_ZERO)) {
-                aot_set_last_error("llvm build ret failed.");
-                return false;
-            }
+        if (!LLVMBuildRetVoid(comp_ctx->builder)) {
+            aot_set_last_error("llvm build ret failed.");
+            return false;
         }
     }
 
@@ -1702,17 +1693,9 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
 
     LLVMPositionBuilderAtEnd(comp_ctx->builder, end_block);
 
-    if (comp_ctx->no_sandbox_mode) {
-        if (!LLVMBuildRetVoid(comp_ctx->builder)) {
-            aot_set_last_error("llvm build ret failed.");
-            return false;
-        }
-    }
-    else {
-        if (!LLVMBuildRet(comp_ctx->builder, I8_ONE)) {
-            aot_set_last_error("llvm build ret failed.");
-            return false;
-        }
+    if (!LLVMBuildRetVoid(comp_ctx->builder)) {
+        aot_set_last_error("llvm build ret failed.");
+        return false;
     }
 
     return true;
@@ -1906,6 +1889,57 @@ create_wasm_instance_destroy_func(const AOTCompData *comp_data,
     return true;
 fail:
     return false;
+}
+
+static bool
+create_wasm_instance_is_created_func(const AOTCompData *comp_data,
+                                     AOTCompContext *comp_ctx)
+{
+    LLVMTypeRef func_type;
+    LLVMValueRef func;
+    LLVMValueRef is_instance_inited_global, is_instance_inited;
+    LLVMBasicBlockRef entry_block;
+    char func_name[32];
+
+    is_instance_inited_global =
+        LLVMGetNamedGlobal(comp_ctx->module, "is_instance_inited");
+    bh_assert(is_instance_inited_global);
+
+    if (!(func_type = LLVMFunctionType(INT8_TYPE, NULL, 0, false))) {
+        aot_set_last_error("create LLVM function type failed.");
+        return false;
+    }
+
+    /* Add `bool wasm_instance_is_created()` function */
+    snprintf(func_name, sizeof(func_name), "%s", "wasm_instance_is_created");
+    if (!(func = LLVMGetNamedFunction(comp_ctx->module, func_name))
+        && !(func = LLVMAddFunction(comp_ctx->module, func_name, func_type))) {
+        aot_set_last_error("add LLVM function failed.");
+        return false;
+    }
+
+    /* Add function entry block */
+    if (!(entry_block = LLVMAppendBasicBlockInContext(comp_ctx->context, func,
+                                                      "func_begin"))) {
+        aot_set_last_error("add LLVM basic block failed.");
+        return false;
+    }
+
+    LLVMPositionBuilderAtEnd(comp_ctx->builder, entry_block);
+
+    if (!(is_instance_inited = LLVMBuildLoad2(comp_ctx->builder, INT8_TYPE,
+                                              is_instance_inited_global,
+                                              "is_instance_inited"))) {
+        aot_set_last_error("llvm build load failed.");
+        return false;
+    }
+
+    if (!LLVMBuildRet(comp_ctx->builder, is_instance_inited)) {
+        aot_set_last_error("llvm build ret void failed.");
+        return false;
+    }
+
+    return true;
 }
 
 static bool
@@ -3865,6 +3899,7 @@ aot_create_comp_context(AOTCompData *comp_data, aot_comp_option_t option)
     if (!create_wasm_globals(comp_data, comp_ctx)
         || !create_wasm_instance_create_func(comp_data, comp_ctx)
         || !create_wasm_instance_destroy_func(comp_data, comp_ctx)
+        || !create_wasm_instance_is_created_func(comp_data, comp_ctx)
         || !create_wasm_set_exception_func(comp_ctx)
         || !create_wasm_get_exception_func(comp_ctx)
         || !create_wasm_get_memory_func(comp_data, comp_ctx)
