@@ -340,7 +340,7 @@ compile_call_indirect_for_nosandbox(AOTCompContext *comp_ctx,
     LLVMValueRef elem_idx;
     LLVMValueRef func;
     LLVMValueRef ext_ret_offset, ext_ret_ptr, ext_ret;
-    LLVMValueRef *param_values = NULL, *value_rets = NULL;
+    LLVMValueRef *param_values = NULL;
     LLVMValueRef value_ret;
     LLVMTypeRef *param_types = NULL, ret_type;
     LLVMTypeRef llvm_func_type, llvm_func_ptr_type;
@@ -514,8 +514,6 @@ fail:
         wasm_runtime_free(param_values);
     if (param_types)
         wasm_runtime_free(param_types);
-    if (value_rets)
-        wasm_runtime_free(value_rets);
     return ret;
 }
 
@@ -528,7 +526,7 @@ aot_compile_op_call_indirect(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
     LLVMValueRef elem_idx, table_elem, func_idx;
     LLVMValueRef func, func_ptr;
     LLVMValueRef ext_ret_offset, ext_ret_ptr, ext_ret;
-    LLVMValueRef *param_values = NULL, *value_rets = NULL;
+    LLVMValueRef *param_values = NULL;
     LLVMValueRef value_ret;
     LLVMTypeRef *param_types = NULL, ret_type;
     LLVMTypeRef llvm_func_type, llvm_func_ptr_type;
@@ -882,8 +880,6 @@ fail:
         wasm_runtime_free(param_values);
     if (param_types)
         wasm_runtime_free(param_types);
-    if (value_rets)
-        wasm_runtime_free(value_rets);
     return ret;
 }
 

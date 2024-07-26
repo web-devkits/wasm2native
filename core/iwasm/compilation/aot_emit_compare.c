@@ -43,8 +43,6 @@ int_cond_to_llvm_op(IntCond cond, LLVMIntPredicate *op)
         case INT_GE_U:
             *op = LLVMIntUGE;
             break;
-        default:
-            return false;
     }
 
     return true;
@@ -75,8 +73,6 @@ float_cond_to_llvm_op(FloatCond cond, LLVMRealPredicate *op)
         case FLOAT_GE:
             *op = LLVMRealOGE;
             break;
-        default:
-            return false;
     }
 
     return true;

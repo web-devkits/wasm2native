@@ -2635,10 +2635,16 @@ aot_generate_tempfile_name(const char *prefix, const char *extension,
 
     name_len = snprintf(buffer, len, "%s-XXXXXX", prefix);
 
+    /* Set umask to only allow owner access */
+    mode_t oldmask = umask(0077); 
     if ((fd = mkstemp(buffer)) <= 0) {
         aot_set_last_error("make temp file failed.");
+        umask(oldmask); 
         return NULL;
     }
+
+    /* Restore the old umask */
+    umask(oldmask); 
 
     /* close and remove temp file */
     close(fd);

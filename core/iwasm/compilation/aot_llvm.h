@@ -352,6 +352,11 @@ aot_check_simd_compatibility(const char *arch_c_str, const char *cpu_c_str);
 void
 aot_apply_llvm_new_pass_manager(AOTCompContext *comp_ctx, LLVMModuleRef module);
 
+/* This allow APIs to pass LLVMModule argument to CreateGlobalStringPtr */
+LLVMValueRef
+LLVMBuildGlobalStringPtr_v2(LLVMBuilderRef B, const char *Str, const char *Name,
+                            LLVMModuleRef module);
+
 void
 aot_handle_llvm_errmsg(const char *string, LLVMErrorRef err);
 

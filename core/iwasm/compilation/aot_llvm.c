@@ -610,8 +610,9 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         for (i = 0; i < exce_msg_count; i++) {
             snprintf(buf, sizeof(buf), "%s%u", "exception_msg#", i);
-            values[i] = LLVMBuildGlobalStringPtr(comp_ctx->builder,
-                                                 exception_msgs[i], buf);
+            /* pass module M */
+            values[i] = LLVMBuildGlobalStringPtr_v2(
+                comp_ctx->builder, exception_msgs[i], buf, comp_ctx->module);
             if (!values[i]) {
                 aot_set_last_error("llvm build const failed");
                 wasm_runtime_free(values);
