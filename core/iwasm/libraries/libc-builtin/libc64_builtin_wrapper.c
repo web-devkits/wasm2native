@@ -4,7 +4,7 @@
  */
 
 #include "bh_platform.h"
-#include "aot_export.h"
+#include "w2n_export.h"
 #include "../common/wasm_runtime.h"
 
 #if defined(_WIN32) || defined(_WIN32_)
