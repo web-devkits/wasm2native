@@ -4,7 +4,7 @@
  */
 
 #include "../common/wasm_runtime.h"
-#include "aot_export.h"
+#include "w2n_export.h"
 
 #define PUT_I64_TO_ADDR(addr, value)         \
     do {                                     \

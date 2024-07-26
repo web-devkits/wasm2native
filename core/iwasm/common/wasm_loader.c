@@ -2131,7 +2131,7 @@ handle_linking_section(const uint8 *buf, const uint8 *buf_end,
 {
     const uint8 *p = buf, *p_end = buf_end;
     char *name;
-    WASMSymbol *symbol;
+    WASMSymbol *symbol = NULL;
     uint32 version, sub_section_type, sub_section_size;
     uint32 symbol_count, symbol_type, symbol_flags;
     uint32 seg_count, elem_idx, name_len, i;

@@ -71,6 +71,7 @@ float_cond_to_llvm_op(FloatCond cond, LLVMRealPredicate *op)
             *op = LLVMRealOLE;
             break;
         case FLOAT_GE:
+        default:
             *op = LLVMRealOGE;
             break;
     }

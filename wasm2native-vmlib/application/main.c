@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "bh_platform.h"
-#include "aot_export.h"
+#include "w2n_export.h"
 
 static int app_argc;
 static char **app_argv;
@@ -169,7 +169,9 @@ main(int argc, char *argv[])
     app_argc = argc1;
     app_argv = argv1;
 
-    if (!wasm_instance_create()) {
+    wasm_instance_create();
+
+    if (!wasm_instance_is_created()) {
         os_printf("Create wasm instance failed.");
         goto fail;
     }
