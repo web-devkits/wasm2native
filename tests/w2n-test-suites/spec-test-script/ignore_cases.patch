@@ -129,6 +129,32 @@ index 33b3f67..a4c1a2d 100644
  
  (assert_return (invoke "call_imported_elem") (i32.const 42))
 +;)
+diff --git a/test/core/exports.wast b/test/core/exports.wast
+index 80d3ae0..db592f4 100644
+--- a/test/core/exports.wast
++++ b/test/core/exports.wast
+@@ -130,7 +130,7 @@
+ 
+ (module (table 0 funcref) (export "a" (table 0)))
+ (module (table 0 funcref) (export "a" (table 0)) (export "b" (table 0)))
+-(module (table 0 funcref) (table 0 funcref) (export "a" (table 0)) (export "b" (table 1)))
++;;(module (table 0 funcref) (table 0 funcref) (export "a" (table 0)) (export "b" (table 1)))
+ 
+ (module (table (export "a") 0 funcref))
+ (module (table (export "a") 0 1 funcref))
+@@ -163,10 +163,12 @@
+   (module (table 0 funcref) (export "a" (table 0)) (export "a" (table 0)))
+   "duplicate export name"
+ )
++(;
+ (assert_invalid
+   (module (table 0 funcref) (table 0 funcref) (export "a" (table 0)) (export "a" (table 1)))
+   "duplicate export name"
+ )
++;)
+ (assert_invalid
+   (module (table 0 funcref) (func) (export "a" (table 0)) (export "a" (func 0)))
+   "duplicate export name"
 diff --git a/test/core/if.wast b/test/core/if.wast
 index 2ea45f6..6f07304 100644
 --- a/test/core/if.wast

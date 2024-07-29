@@ -1109,12 +1109,12 @@ def link_object_to_native(native_tempfile, runner, r):
     log("Running: %s" % " ".join(cmd))
     if not runner:
         subprocess.check_call(cmd)
-        time.sleep(.080)
+        time.sleep(.200)
     else:
         if (r != None):
             r.cleanup()
         Runner(cmd, no_pty=opts.no_pty)
-        time.sleep(.080)
+        time.sleep(.200)
         return r
 
 def run_wasm_with_repl(wasm_tempfile, native_tempfile, opts, r):

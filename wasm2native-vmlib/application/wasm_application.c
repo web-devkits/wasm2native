@@ -1092,6 +1092,32 @@ invoke_FFFF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
 }
 
 static void
+invoke_IfFii_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(int64, float32, float64, int32, int32) = func_ptr;
+    native_code(*(int64 *)argv, *(float32 *)(argv + 2), *(float64 *)(argv + 3),
+                *(int32 *)(argv + 5), *(int32 *)(argv + 6));
+}
+
+static void
+invoke_IfFii_I(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(int64, float32, float64, int32, int32) = func_ptr;
+    *(int64 *)argv_ret = native_code(
+        *(int64 *)argv, *(float32 *)(argv + 2), *(float64 *)(argv + 3),
+        *(int32 *)(argv + 5), *(int32 *)(argv + 6));
+}
+
+static void
+invoke_IfFii_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(int64, float32, float64, int32, int32) = func_ptr;
+    *(float64 *)argv_ret = native_code(
+        *(int64 *)argv, *(float32 *)(argv + 2), *(float64 *)(argv + 3),
+        *(int32 *)(argv + 5), *(int32 *)(argv + 6));
+}
+
+static void
 invoke_fiIiFi_F(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
     float64 (*native_code)(float32, int32, int64, int32, float64, int32) =
@@ -1209,6 +1235,9 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "(FFF)F", invoke_FFF_F },
     { "(ffff)f", invoke_ffff_f },
     { "(FFFF)F", invoke_FFFF_F },
+    { "(IfFii)", invoke_IfFii_v },
+    { "(IfFii)I", invoke_IfFii_I },
+    { "(IfFii)F", invoke_IfFii_F },
     { "(fiIiFi)F", invoke_fiIiFi_F },
     { "(FFFFFFFF)F", invoke_FFFFFFFF_F },
 };
