@@ -800,10 +800,24 @@ invoke_no_args_iF(void *func_ptr, int32 *argv, int32 *argv_ret)
 }
 
 static void
+invoke_no_args_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(int32 *) = func_ptr;
+    *(int64 *)argv_ret = native_code((int32 *)(argv_ret + 2));
+}
+
+static void
 invoke_no_args_fF(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
     float32 (*native_code)(float64 *) = func_ptr;
     *(float32 *)argv_ret = native_code((float64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_Fi(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(int32 *) = func_ptr;
+    *(float64 *)argv_ret = native_code((int32 *)(argv_ret + 2));
 }
 
 static void
@@ -814,10 +828,24 @@ invoke_no_args_Ff(void *func_ptr, int32 *argv, int32 *argv_ret)
 }
 
 static void
+invoke_no_args_FF(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64 *) = func_ptr;
+    *(float64 *)argv_ret = native_code((float64 *)(argv_ret + 2));
+}
+
+static void
 invoke_no_args_iii(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
     int32 (*native_code)(int32 *, int32 *) = func_ptr;
     argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int32 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_iiI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32 *, int64 *) = func_ptr;
+    argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int64 *)(argv_ret + 2));
 }
 
 static void
@@ -1134,9 +1162,13 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "()ii", invoke_no_args_ii },
     { "()iI", invoke_no_args_iI },
     { "()iF", invoke_no_args_iF },
+    { "()Ii", invoke_no_args_Ii },
     { "()fF", invoke_no_args_fF },
+    { "()Fi", invoke_no_args_Fi },
     { "()Ff", invoke_no_args_Ff },
+    { "()FF", invoke_no_args_FF },
     { "()iii", invoke_no_args_iii },
+    { "()iiI", invoke_no_args_iiI },
     { "(i)ii", invoke_i_ii },
     { "(i)iI", invoke_i_iI },
     /* TODO */

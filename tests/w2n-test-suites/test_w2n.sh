@@ -74,7 +74,7 @@ do
         read -t 5 -p "Are you sure to delete all reports. y/n    " cmd
         if [[ $cmd == "y" && $(ls -A workspace/report) ]];then
             rm -fr workspace/report/*
-            rm -fr /tmp/*.wasm /tmp/*.wast /tmp/*.aot
+            rm -fr /tmp/*.wasm /tmp/*.wast /tmp/*.w2n.o /tmp/*.w2n
             echo "cleaned all reports and temp files"
         fi
         exit 0;;

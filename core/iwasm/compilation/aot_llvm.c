@@ -197,7 +197,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
             WASMDataSeg *data_seg = comp_data->data_segments[i];
 
             total_size = (uint64)sizeof(LLVMValueRef) * data_seg->data_length;
-            if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+            if (total_size > 0
+                && !(values = wasm_runtime_malloc((uint32)total_size))) {
                 aot_set_last_error("allocate memory failed");
                 return false;
             }
@@ -213,7 +214,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
             initializer =
                 LLVMConstArray(INT8_TYPE, values, data_seg->data_length);
-            wasm_runtime_free(values);
+            if (values)
+                wasm_runtime_free(values);
             if (!initializer) {
                 aot_set_last_error("llvm build const failed");
                 return false;
@@ -312,7 +314,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         AOTTable *table = &comp_data->tables[0];
 
         total_size = (uint64)sizeof(LLVMValueRef) * table->table_init_size;
-        if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+        if (total_size > 0
+            && !(values = wasm_runtime_malloc((uint32)total_size))) {
             aot_set_last_error("allocate memory failed");
             return false;
         }
@@ -353,7 +356,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         }
 
         initializer = LLVMConstArray(I32_TYPE, values, table->table_init_size);
-        wasm_runtime_free(values);
+        if (values)
+            wasm_runtime_free(values);
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;

@@ -778,7 +778,7 @@ aot_compile_op_call_indirect(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
             goto fail;
         }
 
-        ext_ret_ptr_type = param_types[func_param_count + i];
+        ext_ret_ptr_type = param_types[func_param_count + i - 1];
         snprintf(buf, sizeof(buf), "ext_ret%d_ptr_cast", i - 1);
         if (!(ext_ret_ptr = LLVMBuildBitCast(comp_ctx->builder, ext_ret_ptr,
                                              ext_ret_ptr_type, buf))) {
@@ -786,9 +786,9 @@ aot_compile_op_call_indirect(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
             goto fail;
         }
 
-        param_values[func_param_count + i] = ext_ret_ptr;
-        ext_cell_num +=
-            wasm_value_type_cell_num(func_type->types[func_param_count + i]);
+        param_values[func_param_count + i - 1] = ext_ret_ptr;
+        ext_cell_num += wasm_value_type_cell_num(
+            func_type->types[func_param_count + i - 1]);
     }
 
     LLVMValueRef func_ptrs = LLVMGetNamedGlobal(comp_ctx->module, "func_ptrs");

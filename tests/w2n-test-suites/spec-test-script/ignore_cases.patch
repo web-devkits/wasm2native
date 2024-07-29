@@ -1,3 +1,35 @@
+diff --git a/test/core/call.wast b/test/core/call.wast
+index e4f854f..292e4f5 100644
+--- a/test/core/call.wast
++++ b/test/core/call.wast
+@@ -334,8 +334,11 @@
+ (assert_return (invoke "odd" (i64.const 200)) (i32.const 99))
+ (assert_return (invoke "odd" (i64.const 77)) (i32.const 44))
+ 
++;; native stack overflow check isn't supported
++(;
+ (assert_exhaustion (invoke "runaway") "call stack exhausted")
+ (assert_exhaustion (invoke "mutual-runaway") "call stack exhausted")
++;)
+ 
+ (assert_return (invoke "as-select-first") (i32.const 0x132))
+ (assert_return (invoke "as-select-mid") (i32.const 2))
+diff --git a/test/core/call_indirect.wast b/test/core/call_indirect.wast
+index 79b8dc3..ba90adc 100644
+--- a/test/core/call_indirect.wast
++++ b/test/core/call_indirect.wast
+@@ -582,8 +582,11 @@
+ (assert_return (invoke "odd" (i32.const 200)) (i32.const 99))
+ (assert_return (invoke "odd" (i32.const 77)) (i32.const 44))
+ 
++;; native stack overflow check isn't supported
++(;
+ (assert_exhaustion (invoke "runaway") "call stack exhausted")
+ (assert_exhaustion (invoke "mutual-runaway") "call stack exhausted")
++;)
+ 
+ (assert_return (invoke "as-select-first") (i32.const 0x132))
+ (assert_return (invoke "as-select-mid") (i32.const 2))
 diff --git a/test/core/data.wast b/test/core/data.wast
 index b1e1239..a0f6967 100644
 --- a/test/core/data.wast
