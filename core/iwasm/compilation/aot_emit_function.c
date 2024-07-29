@@ -310,7 +310,7 @@ aot_compile_op_call(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
             snprintf(buf, sizeof(buf), "func%d_ext_ret%d", func_idx, i);
             if (!(ext_ret = LLVMBuildLoad2(
                       comp_ctx->builder, TO_LLVM_TYPE(ext_ret_types[i]),
-                      param_values[1 + param_count + i], buf))) {
+                      param_values[param_count + i], buf))) {
                 aot_set_last_error("llvm build load failed.");
                 goto fail;
             }
@@ -493,9 +493,9 @@ compile_call_indirect_for_nosandbox(AOTCompContext *comp_ctx,
         for (i = 1; i < func_result_count; i++) {
             ret_type = TO_LLVM_TYPE(func_type->types[func_param_count + i]);
             snprintf(buf, sizeof(buf), "ext_ret%d", i - 1);
-            if (!(ext_ret = LLVMBuildLoad2(comp_ctx->builder, ret_type,
-                                           param_values[func_param_count + i],
-                                           buf))) {
+            if (!(ext_ret = LLVMBuildLoad2(
+                      comp_ctx->builder, ret_type,
+                      param_values[func_param_count + i - 1], buf))) {
                 aot_set_last_error("llvm build load failed.");
                 goto fail;
             }
@@ -859,9 +859,9 @@ aot_compile_op_call_indirect(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
         for (i = 1; i < func_result_count; i++) {
             ret_type = TO_LLVM_TYPE(func_type->types[func_param_count + i]);
             snprintf(buf, sizeof(buf), "ext_ret%d", i - 1);
-            if (!(ext_ret = LLVMBuildLoad2(comp_ctx->builder, ret_type,
-                                           param_values[func_param_count + i],
-                                           buf))) {
+            if (!(ext_ret = LLVMBuildLoad2(
+                      comp_ctx->builder, ret_type,
+                      param_values[func_param_count + i - 1], buf))) {
                 aot_set_last_error("llvm build load failed.");
                 goto fail;
             }

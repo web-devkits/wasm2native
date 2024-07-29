@@ -762,6 +762,328 @@ invoke_iiiii_I(void *func_ptr, int32 *argv, int32 *argv_ret)
     PUT_I64_TO_ADDR(argv_ret, ret);
 }
 
+/* For spec cases */
+
+static void
+invoke_no_args_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)() = func_ptr;
+    *(float32 *)argv_ret = native_code();
+}
+
+static void
+invoke_no_args_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)() = func_ptr;
+    *(float64 *)argv_ret = native_code();
+}
+
+static void
+invoke_no_args_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32 *) = func_ptr;
+    argv_ret[0] = native_code((int32 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int64 *) = func_ptr;
+    argv_ret[0] = native_code((int64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_iF(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float64 *) = func_ptr;
+    argv_ret[0] = native_code((float64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_fF(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float64 *) = func_ptr;
+    *(float32 *)argv_ret = native_code((float64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_Ff(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float32 *) = func_ptr;
+    *(float64 *)argv_ret = native_code((float32 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_iii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32 *, int32 *) = func_ptr;
+    argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int32 *)(argv_ret + 2));
+}
+
+static void
+invoke_i_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, int32 *) = func_ptr;
+    argv_ret[0] = native_code(argv[0], (int32 *)(argv_ret + 1));
+}
+
+static void
+invoke_i_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, int64 *) = func_ptr;
+    argv_ret[0] = native_code(argv[0], (int64 *)(argv_ret + 1));
+}
+
+static void
+invoke_i_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(int32) = func_ptr;
+    *(float32 *)argv_ret = native_code(argv[0]);
+}
+
+static void
+invoke_i_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(int32) = func_ptr;
+    *(float64 *)argv_ret = native_code(argv[0]);
+}
+
+static void
+invoke_I_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(int64) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(int64 *)argv);
+}
+
+static void
+invoke_I_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(int64) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(int64 *)argv);
+}
+
+static void
+invoke_f_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(float32) = func_ptr;
+    native_code(*(float32 *)argv);
+}
+
+static void
+invoke_f_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float32) = func_ptr;
+    argv_ret[0] = native_code(*(float32 *)argv);
+}
+
+static void
+invoke_f_I(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(float32) = func_ptr;
+    *(int64 *)argv_ret = native_code(*(float32 *)argv);
+}
+
+static void
+invoke_f_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float32) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(float32 *)argv);
+}
+
+static void
+invoke_f_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float32) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(float32 *)argv);
+}
+
+static void
+invoke_F_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(float64) = func_ptr;
+    native_code(*(float64 *)argv);
+}
+
+static void
+invoke_F_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float64) = func_ptr;
+    argv_ret[0] = native_code(*(float64 *)argv);
+}
+
+static void
+invoke_F_I(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(float64) = func_ptr;
+    *(int64 *)argv_ret = native_code(*(float64 *)argv);
+}
+
+static void
+invoke_F_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float64) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(float64 *)argv);
+}
+
+static void
+invoke_F_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(float64 *)argv);
+}
+
+static void
+invoke_if_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(int32, float32) = func_ptr;
+    native_code(*(int32 *)argv, *(float32 *)(argv + 1));
+}
+
+static void
+invoke_iF_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(int32, float64) = func_ptr;
+    native_code(*(int32 *)argv, *(float64 *)(argv + 1));
+}
+
+static void
+invoke_ii_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(int32, int32) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(int32 *)argv, *(int32 *)(argv + 1));
+}
+
+static void
+invoke_ii_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(int32, int32) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(int32 *)argv, *(int32 *)(argv + 1));
+}
+static void
+invoke_ff_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float32, float32) = func_ptr;
+    *(float32 *)argv_ret =
+        native_code(*(float32 *)argv, *(float32 *)(argv + 1));
+}
+
+static void
+invoke_ff_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float32, float32) = func_ptr;
+    argv_ret[0] = native_code(*(float32 *)argv, *(float32 *)(argv + 1));
+}
+
+static void
+invoke_fF_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float32, float64) = func_ptr;
+    *(float32 *)argv_ret =
+        native_code(*(float32 *)argv, *(float64 *)(argv + 1));
+}
+
+static void
+invoke_Ff_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float64, float32) = func_ptr;
+    *(float32 *)argv_ret =
+        native_code(*(float64 *)argv, *(float32 *)(argv + 2));
+}
+
+static void
+invoke_FF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64, float64) = func_ptr;
+    *(float64 *)argv_ret =
+        native_code(*(float64 *)argv, *(float64 *)(argv + 2));
+}
+
+static void
+invoke_FF_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float64, float64) = func_ptr;
+    argv_ret[0] = native_code(*(float64 *)argv, *(float64 *)(argv + 2));
+}
+
+static void
+invoke_iFi_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, float64, int32) = func_ptr;
+    *(int32 *)argv_ret = native_code(*(int32 *)argv, *(float64 *)(argv + 1),
+                                     *(int32 *)(argv + 3));
+}
+
+static void
+invoke_fff_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float32, float32, float32) = func_ptr;
+    *(int32 *)argv_ret = native_code(*(float32 *)argv, *(float32 *)(argv + 1),
+                                     *(float32 *)(argv + 2));
+}
+
+static void
+invoke_fff_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float32, float32, float32) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(float32 *)argv, *(float32 *)(argv + 1),
+                                       *(float32 *)(argv + 2));
+}
+
+static void
+invoke_FFF_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float64, float64, float64) = func_ptr;
+    *(int32 *)argv_ret = native_code(*(float64 *)argv, *(float64 *)(argv + 2),
+                                     *(float64 *)(argv + 4));
+}
+
+static void
+invoke_FFF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64, float64, float64) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(float64 *)argv, *(float64 *)(argv + 2),
+                                       *(float64 *)(argv + 4));
+}
+
+static void
+invoke_ffff_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float32, float32, float32, float32) = func_ptr;
+    *(float32 *)argv_ret =
+        native_code(*(float32 *)argv, *(float32 *)(argv + 1),
+                    *(float32 *)(argv + 2), *(float32 *)(argv + 3));
+}
+
+static void
+invoke_FFFF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64, float64, float64, float64) = func_ptr;
+    *(float64 *)argv_ret =
+        native_code(*(float64 *)argv, *(float64 *)(argv + 2),
+                    *(float64 *)(argv + 4), *(float64 *)(argv + 6));
+}
+
+static void
+invoke_fiIiFi_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float32, int32, int64, int32, float64, int32) =
+        func_ptr;
+    *(float64 *)argv_ret = native_code(
+        *(float32 *)argv, *(int32 *)(argv + 1), *(int64 *)(argv + 2),
+        *(int32 *)(argv + 4), *(float64 *)(argv + 5), *(int32 *)(argv + 7));
+}
+
+static void
+invoke_FFFFFFFF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64, float64, float64, float64, float64, float64,
+                           float64, float64) = func_ptr;
+    *(float64 *)argv_ret = native_code(
+        *(float64 *)argv, *(float64 *)(argv + 2), *(float64 *)(argv + 4),
+        *(float64 *)(argv + 6), *(float64 *)(argv + 8), *(float64 *)(argv + 10),
+        *(float64 *)(argv + 12), *(float64 *)(argv + 14));
+}
+
 typedef struct QuickAOTEntry {
     const char *signature;
     void *func_ptr;
@@ -808,6 +1130,55 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "(IIII)", invoke_IIII_v }, { "(IIII)i", invoke_IIII_i }, { "(IIII)I", invoke_IIII_I },
 
     { "(iiiii)", invoke_iiiii_v }, { "(iiiii)i", invoke_iiiii_i }, { "(iiiii)I", invoke_iiiii_I },
+
+    { "()ii", invoke_no_args_ii },
+    { "()iI", invoke_no_args_iI },
+    { "()iF", invoke_no_args_iF },
+    { "()fF", invoke_no_args_fF },
+    { "()Ff", invoke_no_args_Ff },
+    { "()iii", invoke_no_args_iii },
+    { "(i)ii", invoke_i_ii },
+    { "(i)iI", invoke_i_iI },
+    /* TODO */
+#if 0
+    { "(iIffiFfiiifFFFiif)FfiiiIfiifFFifiF", invoke_iIffiFfiiifFFFiif_FfiiiIfiifFFifiF },
+#endif
+
+    { "()f", invoke_no_args_f },
+    { "()F", invoke_no_args_F },
+    { "(i)f", invoke_i_f },
+    { "(i)F", invoke_i_F },
+    { "(I)f", invoke_I_f },
+    { "(I)F", invoke_I_F },
+    { "(f)", invoke_f_v },
+    { "(f)i", invoke_f_i },
+    { "(f)I", invoke_f_I },
+    { "(f)f", invoke_f_f },
+    { "(f)F", invoke_f_F },
+    { "(F)", invoke_F_v },
+    { "(F)i", invoke_F_i },
+    { "(F)I", invoke_F_I },
+    { "(F)f", invoke_F_f },
+    { "(F)F", invoke_F_F },
+    { "(if)", invoke_if_v },
+    { "(iF)", invoke_iF_v },
+    { "(ii)f", invoke_ii_f },
+    { "(ii)F", invoke_ii_F },
+    { "(ff)f", invoke_ff_f },
+    { "(ff)i", invoke_ff_i },
+    { "(fF)f", invoke_fF_f },
+    { "(Ff)f", invoke_Ff_f },
+    { "(FF)F", invoke_FF_F },
+    { "(FF)i", invoke_FF_i },
+    { "(iFi)i", invoke_iFi_i },
+    { "(fff)i", invoke_fff_i },
+    { "(fff)f", invoke_fff_f },
+    { "(FFF)i", invoke_FFF_i },
+    { "(FFF)F", invoke_FFF_F },
+    { "(ffff)f", invoke_ffff_f },
+    { "(FFFF)F", invoke_FFFF_F },
+    { "(fiIiFi)F", invoke_fiIiFi_F },
+    { "(FFFFFFFF)F", invoke_FFFFFFFF_F },
 };
 /* clang-format on */
 
