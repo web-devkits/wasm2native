@@ -1,4 +1,4 @@
-Contributing to WAMR
+Contributing to wasm2native
 =====================
 As an open-source project, we welcome and encourage the community to submit patches directly to the project. In our collaborative open source environment, standards and methods for submitting changes help reduce the chaos that can result from an active development community.
 We want to make contributing to this project as easy and transparent as possible, whether it's:
@@ -9,9 +9,9 @@ We want to make contributing to this project as easy and transparent as possible
 
 License
 =======
-WAMR uses the same license as LLVM: the `Apache 2.0 license` with the LLVM
+wasm2native uses the same license as LLVM: the `Apache 2.0 license` with the LLVM
 exception. See the LICENSE file for details. This license allows you to freely
-use, modify, distribute and sell your own products based on WAMR.
+use, modify, distribute and sell your own products based on wasm2native.
 Any contributions you make will be under the same license.
 
 Code changes

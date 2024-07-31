@@ -485,8 +485,6 @@ struct WASMModule {
     const uint8 *name_section_buf;
     const uint8 *name_section_buf_end;
 
-    WASMCustomSection *custom_section_list;
-
     const uint8 *code_section_body;
     const uint8 *data_section_body;
 
