@@ -34,7 +34,7 @@ for root, dirs, files in os.walk("."):
         if len(file.split('.')) < 2 or file.split('.')[1] != 'wasm':
             continue
         filepath=os.path.join(root, file)
-        cmd = options.run + " " + filepath
+        cmd = options.run + " -o test.o " + filepath
         test_out = subprocess.getoutput(cmd)
 
         if not test_out.startswith("Segmentation fault"):

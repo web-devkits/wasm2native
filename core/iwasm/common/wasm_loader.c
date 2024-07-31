@@ -1855,7 +1855,7 @@ load_table_segment_section(const uint8 *buf, const uint8 *buf_end,
     uint32 table_segment_count, i;
     uint64 total_size;
     WASMTableSeg *table_segment;
-    bool is_table64;
+    bool is_table64 = false;
 
     read_leb_uint32(p, p_end, table_segment_count);
 
@@ -1884,10 +1884,19 @@ load_table_segment_section(const uint8 *buf, const uint8 *buf_end,
                                   &table_segment->table_index, error_buf,
                                   error_buf_size))
                 return false;
-            is_table64 =
-                module->tables[table_segment->table_index].flags & TABLE64_FLAG
-                    ? true
-                    : false;
+            if (table_segment->table_index < module->import_table_count)
+                is_table64 = module->import_tables[table_segment->table_index]
+                                         .u.table.flags
+                                     & TABLE64_FLAG
+                                 ? true
+                                 : false;
+            else
+                is_table64 = module->tables[table_segment->table_index
+                                            - module->import_table_count]
+                                         .flags
+                                     & TABLE64_FLAG
+                                 ? true
+                                 : false;
             if (!load_init_expr(&p, p_end, &table_segment->base_offset,
                                 is_table64 ? VALUE_TYPE_I64 : VALUE_TYPE_I32,
                                 error_buf, error_buf_size))
@@ -5346,7 +5355,7 @@ wasm_loader_prepare_bytecode(WASMModule *module, WASMFunction *func,
             {
                 int32 idx;
                 WASMType *func_type;
-                bool is_table64;
+                bool is_table64 = false;
 
                 read_leb_uint32(p, p_end, type_idx);
                 CHECK_BUF(p, p_end, 1);
@@ -5356,9 +5365,18 @@ wasm_loader_prepare_bytecode(WASMModule *module, WASMFunction *func,
                     goto fail;
                 }
 
-                is_table64 = module->tables[table_idx].flags & TABLE64_FLAG
-                                 ? true
-                                 : false;
+                if (table_idx < module->import_table_count)
+                    is_table64 = module->import_tables[table_idx].u.table.flags
+                                         & TABLE64_FLAG
+                                     ? true
+                                     : false;
+                else
+                    is_table64 =
+                        module->tables[table_idx - module->import_table_count]
+                                    .flags
+                                & TABLE64_FLAG
+                            ? true
+                            : false;
 
                 /* skip elem idx */
                 if (is_table64)
