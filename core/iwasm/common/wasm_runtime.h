@@ -32,9 +32,6 @@ wasm_runtime_unload(WASMModule *module);
 void
 wasm_runtime_read_v128(const uint8 *bytes, uint64 *ret1, uint64 *ret2);
 
-void
-wasm_runtime_destroy_custom_sections(WASMCustomSection *section_list);
-
 #ifdef __cplusplus
 }
 #endif

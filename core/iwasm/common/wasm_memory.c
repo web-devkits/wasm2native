@@ -5,12 +5,6 @@
 
 #include "wasm_runtime.h"
 
-unsigned
-wasm_runtime_memory_pool_size()
-{
-    return UINT32_MAX;
-}
-
 static inline void *
 wasm_runtime_malloc_internal(unsigned int size)
 {

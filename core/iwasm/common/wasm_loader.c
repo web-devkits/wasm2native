@@ -2905,22 +2905,6 @@ load_user_section(const uint8 *buf, const uint8 *buf_end, WASMModule *module,
         LOG_VERBOSE("Load reloc.DATA section success.");
     }
 
-    WASMCustomSection *section =
-        loader_malloc(sizeof(WASMCustomSection), error_buf, error_buf_size);
-
-    if (!section) {
-        return false;
-    }
-
-    section->name_addr = (char *)p;
-    section->name_len = name_len;
-    section->content_addr = (uint8 *)(p + name_len);
-    section->content_len = (uint32)(p_end - p - name_len);
-    section->next = module->custom_section_list;
-    module->custom_section_list = section;
-
-    LOG_VERBOSE("Load custom section [%s] success.", section_name);
-
     return true;
 fail:
     return false;
@@ -3633,8 +3617,6 @@ wasm_loader_unload(WASMModule *module)
             node = node_next;
         }
     }
-
-    wasm_runtime_destroy_custom_sections(module->custom_section_list);
 
     if (module->code_relocs)
         wasm_runtime_free(module->code_relocs);
@@ -4937,27 +4919,6 @@ fail:
 
 #define BLOCK_HAS_PARAM(block_type) \
     (!block_type.is_value_type && block_type.u.type->param_count > 0)
-
-const uint8 *
-wasm_loader_get_custom_section(WASMModule *module, const char *name,
-                               uint32 *len)
-{
-    WASMCustomSection *section = module->custom_section_list;
-
-    while (section) {
-        if ((section->name_len == strlen(name))
-            && (memcmp(section->name_addr, name, section->name_len) == 0)) {
-            if (len) {
-                *len = section->content_len;
-            }
-            return section->content_addr;
-        }
-
-        section = section->next;
-    }
-
-    return NULL;
-}
 
 static bool
 wasm_loader_prepare_bytecode(WASMModule *module, WASMFunction *func,

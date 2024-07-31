@@ -294,17 +294,8 @@ aot_create_comp_context(AOTCompData *comp_data, aot_comp_option_t option);
 void
 aot_destroy_comp_context(AOTCompContext *comp_ctx);
 
-int32
-aot_get_native_symbol_index(AOTCompContext *comp_ctx, const char *symbol);
-
 bool
 aot_compile_wasm(AOTCompContext *comp_ctx);
-
-uint8 *
-aot_emit_elf_file(AOTCompContext *comp_ctx, uint32 *p_elf_file_size);
-
-void
-aot_destroy_elf_file(uint8 *elf_file);
 
 void
 aot_value_stack_push(AOTValueStack *stack, AOTValue *value);
