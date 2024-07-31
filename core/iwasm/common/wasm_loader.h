@@ -55,10 +55,6 @@ wasm_loader_find_block_addr(BlockAddr *block_addr_cache,
                             uint8 block_type, uint8 **p_else_addr,
                             uint8 **p_end_addr);
 
-const uint8 *
-wasm_loader_get_custom_section(WASMModule *module, const char *name,
-                               uint32 *len);
-
 #ifdef __cplusplus
 }
 #endif

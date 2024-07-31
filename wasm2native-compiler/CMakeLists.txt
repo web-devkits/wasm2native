@@ -222,6 +222,34 @@ if (WIN32)
   add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
+# Sanitizers
+
+if (NOT DEFINED W2N_BUILD_SANITIZER)
+  set(W2N_BUILD_SANITIZER $ENV{W2N_BUILD_SANITIZER})
+endif ()
+
+if (NOT DEFINED W2N_BUILD_SANITIZER)
+  set(W2N_BUILD_SANITIZER "")
+elseif (W2N_BUILD_SANITIZER STREQUAL "asan")
+  if (NOT W2N_BUILD_JIT EQUAL 1)
+    set (ASAN_OPTIONS "verbosity=2 debug=true ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all" )
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+  endif()
+elseif (W2N_BUILD_SANITIZER STREQUAL "ubsan")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=all -fno-sanitize=alignment" )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+elseif (W2N_BUILD_SANITIZER STREQUAL "tsan")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=thread -fno-sanitize-recover=all" )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+elseif (NOT (W2N_BUILD_SANITIZER STREQUAL "") )
+  message(SEND_ERROR "Unsupported sanitizer: ${W2N_BUILD_SANITIZER}")
+endif()
+
+if (NOT W2N_BUILD_SANITIZER STREQUAL "")
+  message ("-- Sanitizer ${W2N_BUILD_SANITIZER} enabled")
+endif ()
+
 # message ("-- CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 
 add_library (vmlib

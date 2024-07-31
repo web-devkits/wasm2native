@@ -336,10 +336,6 @@ aot_emit_llvm_file(AOTCompContext *comp_ctx, const char *file_name);
 bool
 aot_emit_object_file(AOTCompContext *comp_ctx, const char *file_name);
 
-char *
-aot_generate_tempfile_name(const char *prefix, const char *extension,
-                           char *buffer, uint32 len);
-
 #ifdef __cplusplus
 } /* end of extern "C" */
 #endif
