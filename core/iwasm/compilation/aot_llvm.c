@@ -325,7 +325,13 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
             AOTTableInitData *table_init_data =
                 comp_data->table_init_data_list[j];
             uint32 table_idx = table_init_data->table_index;
-            bool is_table64;
+            bool is_table64 = false;
+
+            /* multi-talbe isn't allowed and was already checked in loader */
+            if (table_idx < comp_data->import_table_count) {
+                aot_set_last_error("import table is not supported");
+                return false;
+            }
 
             is_table64 = comp_data->tables[table_idx].table_flags & TABLE64_FLAG
                              ? true
