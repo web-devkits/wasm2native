@@ -6,9 +6,15 @@
 </div>
 
 ### Overview
-wasm2native allows developer to compile the WebAssembly file into a native object file, and then link it with an auxiliary library into a native binary, e.g., executable file, shared library or static library. It removes the wasm runtime dependency and provides two modes:
-- sandbox mode: the wasm sandbox is kept, and the wasm address space and native address space are different
-- [no-sandbox mode](https://github.com/AndroidWasm/wabt/tree/main/wasm2c#no-sandbox-mode-experimental), the wasm sandbox is discarded but it allows sharing pointers (both memory pointers and function pointers) between wasm and native, and the address space is the same in wasm and native.
+wasm2native allows developer to compile the WebAssembly file into a native object file, and then
+link it with an auxiliary library into a native binary, e.g., an executable file, shared library or
+static library. It removes the Wasm runtime dependency and provides two modes:
+- sandbox mode: the Wasm sandbox is kept, and the Wasm address space and native address space are
+  kept separate
+- [no-sandbox
+  mode](https://github.com/AndroidWasm/wabt/tree/main/wasm2c#no-sandbox-mode-experimental), the Wasm
+  sandbox is discarded; this means it allows sharing pointers (e.g., memory pointers, function
+  pointers) between Wasm and native and the address space is the same in Wasm and native.
 
 <img src="./doc/images/compilation_pipeline.svg" width="1100" height="220" />
 
@@ -23,6 +29,6 @@ wasm2native allows developer to compile the WebAssembly file into a native objec
 
 License
 =======
-wasm2native uses the same license as LLVM: the `Apache 2.0 license` with the LLVM exception. See the LICENSE file for details.
-This license allows you to freely use, modify, distribute and sell your own products based on wasm2native.
-Any contributions you make will be under the same license.
+wasm2native uses the same license as LLVM: the `Apache 2.0 license` with the LLVM exception. See the
+LICENSE file for details. This license allows you to freely use, modify, distribute and sell your
+own products based on wasm2native. Any contributions you make will be under the same license.
