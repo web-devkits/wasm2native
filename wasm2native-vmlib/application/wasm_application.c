@@ -863,6 +863,23 @@ invoke_i_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
 }
 
 static void
+invoke_i_iiI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, int32 *, int64 *) = func_ptr;
+    argv_ret[0] =
+        native_code(argv[0], (int32 *)(argv_ret + 1), (int64 *)(argv_ret + 2));
+}
+
+static void
+invoke_IIi_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(int64, int64, int32, int32 *) = func_ptr;
+    *(int64 *)argv_ret =
+        native_code(*(int64 *)argv, *(int64 *)(argv + 2), *(int64 *)(argv + 4),
+                    (int32 *)(argv_ret + 2));
+}
+
+static void
 invoke_i_f(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
     float32 (*native_code)(int32) = func_ptr;
@@ -1042,6 +1059,14 @@ invoke_iFi_i(void *func_ptr, int32 *argv, int32 *argv_ret)
 }
 
 static void
+invoke_ffi_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float32, float32, int32) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(float32 *)argv, *(float32 *)(argv + 1),
+                                       *(int32 *)(argv + 2));
+}
+
+static void
 invoke_fff_i(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
     int32 (*native_code)(float32, float32, float32) = func_ptr;
@@ -1055,6 +1080,14 @@ invoke_fff_f(void *func_ptr, int32 *argv, int32 *argv_ret)
     float32 (*native_code)(float32, float32, float32) = func_ptr;
     *(float32 *)argv_ret = native_code(*(float32 *)argv, *(float32 *)(argv + 1),
                                        *(float32 *)(argv + 2));
+}
+
+static void
+invoke_FFi_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64, float64, int32) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(float64 *)argv, *(float64 *)(argv + 2),
+                                       *(int32 *)(argv + 4));
 }
 
 static void
@@ -1197,6 +1230,9 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "()iiI", invoke_no_args_iiI },
     { "(i)ii", invoke_i_ii },
     { "(i)iI", invoke_i_iI },
+    { "(i)iiI", invoke_i_iiI },
+    { "(i)iiI", invoke_i_iiI },
+    { "(IIi)Ii", invoke_IIi_Ii },
     /* TODO */
 #if 0
     { "(iIffiFfiiifFFFiif)FfiiiIfiifFFifiF", invoke_iIffiFfiiifFFFiif_FfiiiIfiifFFifiF },
@@ -1229,8 +1265,10 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "(FF)F", invoke_FF_F },
     { "(FF)i", invoke_FF_i },
     { "(iFi)i", invoke_iFi_i },
+    { "(ffi)f", invoke_ffi_f },
     { "(fff)i", invoke_fff_i },
     { "(fff)f", invoke_fff_f },
+    { "(FFi)F", invoke_FFi_F },
     { "(FFF)i", invoke_FFF_i },
     { "(FFF)F", invoke_FFF_F },
     { "(ffff)f", invoke_ffff_f },

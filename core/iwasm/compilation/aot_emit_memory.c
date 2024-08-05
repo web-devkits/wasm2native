@@ -1064,7 +1064,7 @@ static LLVMValueRef
 check_bulk_memory_overflow(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                            LLVMValueRef offset, LLVMValueRef bytes)
 {
-    LLVMValueRef maddr, max_addr, cmp, mem_size, addr;
+    LLVMValueRef maddr, max_addr, cmp, mem_size;
     LLVMValueRef mem_base_addr;
     LLVMValueRef cur_page_count_global;
     LLVMBasicBlockRef block_curr = LLVMGetInsertBlock(comp_ctx->builder);
@@ -1073,12 +1073,11 @@ check_bulk_memory_overflow(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
     if (!(mem_base_addr = aot_get_memory_base_addr(comp_ctx, func_ctx)))
         return false;
 
-    POP_I32(addr);
-
     cur_page_count_global =
         LLVMGetNamedGlobal(comp_ctx->module, "cur_page_count");
     bh_assert(cur_page_count_global);
 
+    /* TODO: should multiply with page size? */
     if (!(mem_size = LLVMBuildLoad2(comp_ctx->builder, I32_TYPE,
                                     cur_page_count_global, "cur_page_count"))) {
         aot_set_last_error("llvm build load failed.");

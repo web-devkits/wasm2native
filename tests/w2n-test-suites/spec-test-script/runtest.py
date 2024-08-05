@@ -393,7 +393,7 @@ def get_module_exp_from_assert(string):
     return result
 
 def string_to_unsigned(number_in_string, lane_type):
-    if not lane_type in ['i8x16', 'i16x8', 'i32x4', 'i64x2']:
+    if lane_type not in ['i8x16', 'i16x8', 'i32x4', 'i64x2']:
         raise Exception("invalid value {} and type {} and lane_type {}".format(number_in_string, type, lane_type))
 
     number = int(number_in_string, 16) if '0x' in number_in_string else int(number_in_string)
@@ -603,8 +603,8 @@ def vector_value_comparison(out, expected):
     # since i64x2
     out_packed = struct.pack("QQ", int(out_val[0], 16), int(out_val[1], 16))
     expected_packed = struct.pack("QQ",
-        int(expected_val[0]) if not "0x" in expected_val[0] else int(expected_val[0], 16),
-        int(expected_val[1]) if not "0x" in expected_val[1] else int(expected_val[1], 16))
+        int(expected_val[0]) if "0x" not in expected_val[0] else int(expected_val[0], 16),
+        int(expected_val[1]) if "0x" not in expected_val[1] else int(expected_val[1], 16))
 
     if lane_type in ["i8x16", "i16x8", "i32x4", "i64x2"]:
         return out_packed == expected_packed
@@ -623,7 +623,7 @@ def vector_value_comparison(out, expected):
         if any(out_is_nan):
             nan_comparision = [o == e for o, e in zip(out_is_nan, expected_is_nan)]
             if all(nan_comparision):
-                print(f"Pass NaN comparision")
+                print("Pass NaN comparision")
                 return True
 
         # print(f"compare {out_unpacked} and {expected_unpacked}")
@@ -712,9 +712,9 @@ def value_comparison(out, expected):
     if not expected:
         return False
 
-    if not out in ["ref.array", "ref.struct", "ref.func", "ref.any", "ref.i31"]:
+    if out not in ["ref.array", "ref.struct", "ref.func", "ref.any", "ref.i31"]:
         assert(':' in out), "out should be in a form likes numbers:type, but {}".format(out)
-    if not expected in ["ref.array", "ref.struct", "ref.func", "ref.any", "ref.i31"]:
+    if expected not in ["ref.array", "ref.struct", "ref.func", "ref.any", "ref.i31"]:
         assert(':' in expected), "expected should be in a form likes numbers:type, but {}".format(expected)
 
     if 'v128' in out:
@@ -878,9 +878,8 @@ def test_assert_return(r, opts, form):
         except:
             _, exc, _ = sys.exc_info()
             log("Run wasm2native failed:\n  got: '%s'" % r.buf)
-            ret_code = 1
             sys.exit(1)
-        r = link_object_to_native(module+".w2n", True, r)
+        r = link_object_to_native(module+".w2n", False, r)
         r = run_wasm_with_repl(module+".wasm", module+".w2n", opts, r)
         # Wait for the initial prompt
         try:
@@ -946,7 +945,7 @@ def test_assert_trap(r, opts, form):
             log("Run wasm2native failed:\n  got: '%s'" % r.buf)
             ret_code = 1
             sys.exit(1)
-        r = link_object_to_native(module+".w2n", True, r)
+        r = link_object_to_native(module+".w2n", False, r)
         r = run_wasm_with_repl(module+".wasm", module+".w2n", opts, r)
         # Wait for the initial prompt
         try:
@@ -1109,7 +1108,6 @@ def link_object_to_native(native_tempfile, runner, r):
     log("Running: %s" % " ".join(cmd))
     if not runner:
         subprocess.check_call(cmd)
-        time.sleep(.200)
     else:
         if (r != None):
             r.cleanup()
@@ -1150,7 +1148,7 @@ def run_wasm_with_repl(wasm_tempfile, native_tempfile, opts, r):
         r.read_to_prompt(['nsh> '], 10)
         r.writeline("mount -t hostfs -o fs={} /tmp".format(tempfile.gettempdir()))
         r.read_to_prompt(['nsh> '], 10)
-        r.writeline(" ".join(cmd_iwasm))
+        r.writeline(" ".join(cmd))
 
     return r
 
@@ -1192,7 +1190,7 @@ def test_assert_with_exception(form, wast_tempfile, wasm_tempfile, native_tempfi
             ret_code = 1
             sys.exit(1)
 
-    r = link_object_to_native(native_tempfile, True, r)
+    r = link_object_to_native(native_tempfile, False, r)
     r = run_wasm_with_repl(wasm_tempfile, native_tempfile, opts, r)
 
     # Some module couldn't load so will raise an error directly, so shell prompt won't show here
@@ -1318,7 +1316,7 @@ if __name__ == "__main__":
                             ret_code = 1
                             sys.exit(1)
 
-                    r = link_object_to_native(native_tempfile, True, r)
+                    r = link_object_to_native(native_tempfile, False, r)
                     r = run_wasm_with_repl(wasm_tempfile, native_tempfile, opts, r)
 
                 elif re.match("^\(assert_malformed\s*\(module quote", form):
@@ -1355,7 +1353,7 @@ if __name__ == "__main__":
                             ret_code = 1
                             sys.exit(1)
                         temp_module_table[module_name] = temp_files[1]
-                        r = link_object_to_native(temp_files[2], True, r)
+                        r = link_object_to_native(temp_files[2], False, r)
                         r = run_wasm_with_repl(temp_files[1], temp_files[2], opts, r)
                 else:
                     if not compile_wast_to_wasm(form, wast_tempfile, wasm_tempfile, opts):
@@ -1370,7 +1368,7 @@ if __name__ == "__main__":
                         ret_code = 1
                         sys.exit(1)
 
-                    r = link_object_to_native(native_tempfile, True, r)
+                    r = link_object_to_native(native_tempfile, False, r)
                     r = run_wasm_with_repl(wasm_tempfile, native_tempfile, opts, r)
 
                 # Wait for the initial prompt

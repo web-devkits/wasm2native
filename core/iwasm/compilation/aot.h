@@ -186,6 +186,7 @@ typedef struct AOTCompData {
     uint32 data_seg_count;
     WASMDataSeg **data_segments;
 
+    /* TODO: unused? */
     /* Import tables */
     uint32 import_table_count;
     AOTImportTable *import_tables;

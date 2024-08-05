@@ -63,6 +63,29 @@ def ignore_the_case(
     if case_name in ["imports", "linking", "simd_linking"]:
         return True
 
+    # wasm2native don't support some opcodes, 
+    # for instance, ref-types and some bulk memory
+    if case_name in [
+        # ref-types
+        "ref_func",
+        "ref_null",
+        "ref_is_null",
+        "table_get",
+        "table_set",
+        "table_init",
+        "table_copy",
+        "elem_drop",
+        "table_size",
+        "table_grow",
+        "table_fill",
+        # TODO: memory_fill and memory_copy too?
+        # some bulk memory opcodes
+        "bulk",
+        "memory_init",
+        "data_drop",
+    ]:
+        return True
+
     # Note: x87 doesn't preserve sNaN and makes some relevant tests fail
     if "i386" == target and case_name in ["float_exprs", "conversions"]:
         return True
