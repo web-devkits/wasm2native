@@ -1,14 +1,20 @@
-### Build wasm2native compiler
+### Compiler
 
-The wasm2native compiler is to compile wasm binary file to object file. You can execute following commands to build **wasm2native** compiler:
+The `wasm2native` compiler exists to compile Wasm modules to a native object file.
 
-For **Linux**(Ubuntu 20.04 as an example):
+### Build
 
-First, make sure necessary dependency are installed:
+To build the `wasm2native` compiler:
+
+##### Linux (e.g., Ubuntu 20.04)
+
+Install necessary dependencies:
 
 ```shell
-sudo apt-get install git build-essential cmake g++-multilib libgcc-9-dev lib32gcc-9-dev ccache 
+sudo apt-get install git build-essential cmake g++-multilib libgcc-9-dev lib32gcc-9-dev ccache
 ```
+
+Then, build the compiler:
 
 ```shell
 cd wasm2native-compiler
@@ -19,7 +25,7 @@ make
 # wasm2native is generated under current directory
 ```
 
-For **Windows**：
+##### Windows
 
 ```shell
 cd wasm2native-compiler

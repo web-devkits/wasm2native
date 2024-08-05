@@ -367,7 +367,13 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
             AOTTableInitData *table_init_data =
                 comp_data->table_init_data_list[j];
             uint32 table_idx = table_init_data->table_index, length;
-            bool is_table64;
+            bool is_table64 = false;
+
+            /* multi-talbe isn't allowed and was already checked in loader */
+            if (table_idx < comp_data->import_table_count) {
+                aot_set_last_error("import table is not supported");
+                return false;
+            }
 
             is_table64 = comp_data->tables[table_idx].table_flags & TABLE64_FLAG
                              ? true
@@ -1046,7 +1052,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
         LLVMValueRef func_ptrs_global, func_idx_const, p_func_ptr;
         WASMType *wasm_func_type = comp_data->import_funcs[i].func_type;
         NativeSymbol *native_symbol, key = { 0 };
-        char signature[32] = { 0 }, *p = signature;
+        char signature[32] = { 0 }, *p = signature, symbol_name[128] = { 0 };
         bool native_symbol_found = false;
 
         bh_assert(wasm_func_type->result_count <= 1);
@@ -1090,7 +1096,6 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
                                    / sizeof(NativeSymbol);
             }
             else if (IS_MEMORY64) {
-                char symbol_name[128];
                 snprintf(symbol_name, sizeof(symbol_name), "%s%s",
                          comp_data->import_funcs[i].func_name, "64");
                 key.symbol_name = symbol_name;
