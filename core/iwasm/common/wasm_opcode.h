@@ -477,7 +477,7 @@ typedef enum WASMSimdEXTOpcode {
     SIMD_i16x8_min_u = 0x97,
     SIMD_i16x8_max_s = 0x98,
     SIMD_i16x8_max_u = 0x99,
-    /* placeholder            = 0x9a */
+    /* placeholder = 0x9a */
     SIMD_i16x8_avgr_u = 0x9b,
     SIMD_i16x8_extmul_low_i8x16_s = 0x9c,
     SIMD_i16x8_extmul_high_i8x16_s = 0x9d,
@@ -487,11 +487,11 @@ typedef enum WASMSimdEXTOpcode {
     /* i32x4 operation */
     SIMD_i32x4_abs = 0xa0,
     SIMD_i32x4_neg = 0xa1,
-    /* placeholder            = 0xa2 */
+    /* placeholder = 0xa2 */
     SIMD_i32x4_all_true = 0xa3,
     SIMD_i32x4_bitmask = 0xa4,
-    SIMD_i32x4_narrow_i64x2_s = 0xa5,
-    SIMD_i32x4_narrow_i64x2_u = 0xa6,
+    /* placeholder = 0xa5 */
+    /* placeholder = 0xa6 */
     SIMD_i32x4_extend_low_i16x8_s = 0xa7,
     SIMD_i32x4_extend_high_i16x8_s = 0xa8,
     SIMD_i32x4_extend_low_i16x8_u = 0xa9,
@@ -500,19 +500,19 @@ typedef enum WASMSimdEXTOpcode {
     SIMD_i32x4_shr_s = 0xac,
     SIMD_i32x4_shr_u = 0xad,
     SIMD_i32x4_add = 0xae,
-    SIMD_i32x4_add_sat_s = 0xaf,
-    SIMD_i32x4_add_sat_u = 0xb0,
+    /* placeholder = 0xaf */
+    /* placeholder = 0xb0 */
     SIMD_i32x4_sub = 0xb1,
-    SIMD_i32x4_sub_sat_s = 0xb2,
-    SIMD_i32x4_sub_sat_u = 0xb3,
-    /* placeholder            = 0xb4 */
+    /* placeholder = 0xb2 */
+    /* placeholder = 0xb3 */
+    /* placeholder = 0xb4 */
     SIMD_i32x4_mul = 0xb5,
     SIMD_i32x4_min_s = 0xb6,
     SIMD_i32x4_min_u = 0xb7,
     SIMD_i32x4_max_s = 0xb8,
     SIMD_i32x4_max_u = 0xb9,
     SIMD_i32x4_dot_i16x8_s = 0xba,
-    SIMD_i32x4_avgr_u = 0xbb,
+    /* placeholder = 0xbb */
     SIMD_i32x4_extmul_low_i16x8_s = 0xbc,
     SIMD_i32x4_extmul_high_i16x8_s = 0xbd,
     SIMD_i32x4_extmul_low_i16x8_u = 0xbe,
@@ -521,11 +521,11 @@ typedef enum WASMSimdEXTOpcode {
     /* i64x2 operation */
     SIMD_i64x2_abs = 0xc0,
     SIMD_i64x2_neg = 0xc1,
-    /* placeholder       = 0xc2 */
+    /* placeholder = 0xc2 */
     SIMD_i64x2_all_true = 0xc3,
     SIMD_i64x2_bitmask = 0xc4,
-    /* placeholder       = 0xc5 */
-    /* placeholder       = 0xc6 */
+    /* placeholder = 0xc5 */
+    /* placeholder = 0xc6 */
     SIMD_i64x2_extend_low_i32x4_s = 0xc7,
     SIMD_i64x2_extend_high_i32x4_s = 0xc8,
     SIMD_i64x2_extend_low_i32x4_u = 0xc9,
@@ -534,12 +534,12 @@ typedef enum WASMSimdEXTOpcode {
     SIMD_i64x2_shr_s = 0xcc,
     SIMD_i64x2_shr_u = 0xcd,
     SIMD_i64x2_add = 0xce,
-    /* placeholder       = 0xcf */
-    /* placeholder       = 0xd0 */
+    /* placeholder = 0xcf */
+    /* placeholder = 0xd0 */
     SIMD_i64x2_sub = 0xd1,
-    /* placeholder       = 0xd2 */
-    /* placeholder       = 0xd3 */
-    /* placeholder       = 0xd4 */
+    /* placeholder = 0xd2 */
+    /* placeholder = 0xd3 */
+    /* placeholder = 0xd4 */
     SIMD_i64x2_mul = 0xd5,
     SIMD_i64x2_eq = 0xd6,
     SIMD_i64x2_ne = 0xd7,
@@ -555,7 +555,7 @@ typedef enum WASMSimdEXTOpcode {
     /* f32x4 operation */
     SIMD_f32x4_abs = 0xe0,
     SIMD_f32x4_neg = 0xe1,
-    SIMD_f32x4_round = 0xe2,
+    /* placeholder = 0xe2 */
     SIMD_f32x4_sqrt = 0xe3,
     SIMD_f32x4_add = 0xe4,
     SIMD_f32x4_sub = 0xe5,
@@ -569,7 +569,7 @@ typedef enum WASMSimdEXTOpcode {
     /* f64x2 operation */
     SIMD_f64x2_abs = 0xec,
     SIMD_f64x2_neg = 0xed,
-    SIMD_f64x2_round = 0xee,
+    /* placeholder = 0xee */
     SIMD_f64x2_sqrt = 0xef,
     SIMD_f64x2_add = 0xf0,
     SIMD_f64x2_sub = 0xf1,
