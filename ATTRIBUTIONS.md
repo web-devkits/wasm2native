@@ -1,7 +1,7 @@
 wasm2native Attributions
-======================================
+========================
 
-wasm2native project reuses some components from other open source project:
+The `wasm2native` project reuses some components from other open source project:
 - **llvm**: for the AOT compilation
 - **wasm-micro-runtime**: for the AOT compilation and the auxiliary library
 
