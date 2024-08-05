@@ -13,10 +13,10 @@ import sys
 import time
 
 '''
-python3 runtest.py --wast2wasm ./wabt/out/gcc/Release/wat2wasm --wasm2native-compiler
-    ../../../wasm2native-compiler/build/wasm2native
-    --vmlib-file ../../../wasm2native-vmlib/build/libvmlib.a
-    --target x86_64 wast_file
+python3 runtest.py --wast2wasm ./wabt/out/gcc/Release/wat2wasm --wasm2native-compiler \
+    ../../../wasm2native-compiler/build/wasm2native \
+    --vmlib-file ../../../wasm2native-vmlib/build/libvmlib.a \
+    --target x86_64 spec/test/core/xxx.wast
 '''
 
 def exe_file_path(base_path: str) -> str:
