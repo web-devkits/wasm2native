@@ -215,6 +215,7 @@ compile_op_float_min_max(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                          bool is_f32, LLVMValueRef left, LLVMValueRef right,
                          bool is_min)
 {
+    LLVMTypeRef float_param_types[2];
     LLVMTypeRef param_types[2], ret_type = is_f32 ? F32_TYPE : F64_TYPE,
                                 int_type = is_f32 ? I32_TYPE : I64_TYPE;
     LLVMValueRef cmp, is_eq, is_nan, ret, left_int, right_int, tmp,
@@ -223,7 +224,9 @@ compile_op_float_min_max(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                              : (is_f32 ? "llvm.maxnum.f32" : "llvm.maxnum.f64");
     CHECK_LLVM_CONST(nan);
 
-    param_types[0] = param_types[1] = ret_type;
+    /* Note: param_types is used by LLVM_BUILD_OP_OR_INTRINSIC */
+    param_types[0] = param_types[1] = int_type;
+    float_param_types[0] = float_param_types[1] = ret_type;
 
     if (!(is_nan = LLVMBuildFCmp(comp_ctx->builder, LLVMRealUNO, left, right,
                                  "is_nan"))
@@ -258,7 +261,7 @@ compile_op_float_min_max(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
     }
 
     if (!(cmp = aot_call_llvm_intrinsic(comp_ctx, func_ctx, intrinsic, ret_type,
-                                        param_types, 2, left, right)))
+                                        float_param_types, 2, left, right)))
         return NULL;
 
     /* The result of XIP intrinsic is 0 or 1, should return it directly */
@@ -505,7 +508,7 @@ compile_int_div(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
     }
     else {
         if (!comp_ctx->no_sandbox_mode) {
-            /* Check divied by zero */
+            /* Check divided by zero */
             LLVM_BUILD_ICMP(LLVMIntEQ, right, is_i32 ? I32_ZERO : I64_ZERO,
                             cmp_div_zero, "cmp_div_zero");
             ADD_BASIC_BLOCK(check_div_zero_succ, "check_div_zero_success");
