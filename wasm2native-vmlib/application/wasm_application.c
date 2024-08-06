@@ -778,6 +778,7 @@ invoke_no_args_F(void *func_ptr, int32 *argv, int32 *argv_ret)
     *(float64 *)argv_ret = native_code();
 }
 
+#if W2N_ENABLE_SPEC_TEST != 0
 static void
 invoke_no_args_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
@@ -878,6 +879,7 @@ invoke_IIi_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
         native_code(*(int64 *)argv, *(int64 *)(argv + 2), *(int64 *)(argv + 4),
                     (int32 *)(argv_ret + 2));
 }
+#endif /* end of W2N_ENABLE_SPEC_TEST != 0 */
 
 static void
 invoke_i_f(void *func_ptr, int32 *argv, int32 *argv_ret)
@@ -1218,6 +1220,7 @@ static QuickAOTEntry quick_aot_entries[] = {
 
     { "(iiiii)", invoke_iiiii_v }, { "(iiiii)i", invoke_iiiii_i }, { "(iiiii)I", invoke_iiiii_I },
 
+#if W2N_ENABLE_SPEC_TEST != 0
     { "()ii", invoke_no_args_ii },
     { "()iI", invoke_no_args_iI },
     { "()iF", invoke_no_args_iF },
@@ -1236,6 +1239,7 @@ static QuickAOTEntry quick_aot_entries[] = {
     /* TODO */
 #if 0
     { "(iIffiFfiiifFFFiif)FfiiiIfiifFFifiF", invoke_iIffiFfiiifFFFiif_FfiiiIfiifFFifiF },
+#endif
 #endif
 
     { "()f", invoke_no_args_f },

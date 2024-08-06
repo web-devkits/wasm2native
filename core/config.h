@@ -56,27 +56,16 @@
 #define BH_DEBUG 0
 #endif
 
-#define AOT_MAGIC_NUMBER 0x746f6100
-#define AOT_CURRENT_VERSION 3
-
-#ifndef WASM_ENABLE_LOAD_CUSTOM_SECTION
-#define WASM_ENABLE_LOAD_CUSTOM_SECTION 0
+#ifndef W2N_ENABLE_CUSTOM_NAME_SECTION
+#define W2N_ENABLE_CUSTOM_NAME_SECTION 0
 #endif
 
-#ifndef WASM_ENABLE_CUSTOM_NAME_SECTION
-#define WASM_ENABLE_CUSTOM_NAME_SECTION 0
+#ifndef W2N_ENABLE_MEMORY_TRACING
+#define W2N_ENABLE_MEMORY_TRACING 0
 #endif
 
 #ifndef APP_HEAP_SIZE_MIN
 #define APP_HEAP_SIZE_MIN (256)
-#endif
-
-#ifndef APP_THREAD_STACK_SIZE_DEFAULT
-#define APP_THREAD_STACK_SIZE_DEFAULT (128 * 1024)
-#endif
-
-#ifndef APP_THREAD_STACK_SIZE_MAX
-#define APP_THREAD_STACK_SIZE_MAX (8 * 1024 * 1024)
 #endif
 
 /* Default wasm block address cache size and conflict list size */
@@ -88,6 +77,10 @@
 /* Default enable pthread */
 #ifndef W2N_ENABLE_PTHREAD
 #define W2N_ENABLE_PTHREAD 1
+#endif
+
+#ifndef W2N_ENABLE_SPEC_TEST
+#define W2N_ENABLE_SPEC_TEST 0
 #endif
 
 #endif /* end of _CONFIG_H_ */
