@@ -31,12 +31,7 @@ endif()
 set (CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set (CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-add_definitions(-DWASM_ENABLE_CUSTOM_NAME_SECTION=1)
-add_definitions(-DWASM_ENABLE_LOAD_CUSTOM_SECTION=1)
-
-if (W2N_BUILD_LLVM_LEGACY_PM EQUAL 1)
-  add_definitions(-DWASM_ENABLE_LLVM_LEGACY_PM=1)
-endif ()
+add_definitions(-DW2N_ENABLE_CUSTOM_NAME_SECTION=1)
 
 if (NOT W2N_BUILD_TARGET)
   string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}" HOST_SYSTEM_PROCESSOR)
@@ -221,6 +216,34 @@ endif()
 if (WIN32)
   add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
+
+# Sanitizers
+
+if (NOT DEFINED W2N_BUILD_SANITIZER)
+  set(W2N_BUILD_SANITIZER $ENV{W2N_BUILD_SANITIZER})
+endif ()
+
+if (NOT DEFINED W2N_BUILD_SANITIZER)
+  set(W2N_BUILD_SANITIZER "")
+elseif (W2N_BUILD_SANITIZER STREQUAL "asan")
+  if (NOT W2N_BUILD_JIT EQUAL 1)
+    set (ASAN_OPTIONS "verbosity=2 debug=true ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all" )
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+  endif()
+elseif (W2N_BUILD_SANITIZER STREQUAL "ubsan")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=all -fno-sanitize=alignment" )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+elseif (W2N_BUILD_SANITIZER STREQUAL "tsan")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=thread -fno-sanitize-recover=all" )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+elseif (NOT (W2N_BUILD_SANITIZER STREQUAL "") )
+  message(SEND_ERROR "Unsupported sanitizer: ${W2N_BUILD_SANITIZER}")
+endif()
+
+if (NOT W2N_BUILD_SANITIZER STREQUAL "")
+  message ("-- Sanitizer ${W2N_BUILD_SANITIZER} enabled")
+endif ()
 
 # message ("-- CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 

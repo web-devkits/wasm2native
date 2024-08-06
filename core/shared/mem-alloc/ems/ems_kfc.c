@@ -72,7 +72,7 @@ gc_init_with_pool(char *buf, gc_size_t buf_size)
         (char *)(((uintptr_t)base_addr + 7) & (uintptr_t)~7) + GC_HEAD_PADDING;
     heap_max_size = (uint32)(buf_end - base_addr) & (uint32)~7;
 
-#if WASM_ENABLE_MEMORY_TRACING != 0
+#if W2N_ENABLE_MEMORY_TRACING != 0
     os_printf("Heap created, total size: %u\n", buf_size);
     os_printf("   heap struct size: %u\n", sizeof(gc_heap_t));
     os_printf("   actual heap size: %u\n", heap_max_size);

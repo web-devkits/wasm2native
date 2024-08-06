@@ -124,17 +124,6 @@ wasm_runtime_read_v128(const uint8 *bytes, uint64 *ret1, uint64 *ret2)
 }
 
 void
-wasm_runtime_destroy_custom_sections(WASMCustomSection *section_list)
-{
-    WASMCustomSection *section = section_list, *next;
-    while (section) {
-        next = section->next;
-        wasm_runtime_free(section);
-        section = next;
-    }
-}
-
-void
 wasm_runtime_get_version(uint32 *p_major, uint32 *p_minor, uint32 *p_patch)
 {
     *p_major = W2N_VERSION_MAJOR;

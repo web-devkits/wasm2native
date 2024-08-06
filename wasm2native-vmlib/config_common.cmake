@@ -75,11 +75,18 @@ elseif (W2N_BUILD_TARGET MATCHES "THUMB.*")
   set (CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -Wa,-mthumb")
 endif ()
 
+if (W2N_BUILD_SPEC_TEST EQUAL 1)
+  add_definitions (-DW2N_ENABLE_SPEC_TEST=1)
+endif ()
+
 ########################################
 
 message ("-- Build Configurations:")
 message ("     Build as target ${W2N_BUILD_TARGET}")
 message ("     CMAKE_BUILD_TYPE " ${CMAKE_BUILD_TYPE})
 if (W2N_BUILD_WASM_APPLICATION EQUAL 1)
-    message ("     Extra application lib enabled")
+  message ("     Extra application lib enabled")
+endif ()
+if (W2N_BUILD_SPEC_TEST EQUAL 1)
+  message ("     Spec test compatible mode enabled")
 endif ()

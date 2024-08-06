@@ -196,8 +196,38 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         for (i = 0; i < comp_data->data_seg_count; i++) {
             WASMDataSeg *data_seg = comp_data->data_segments[i];
 
+            /* Check for memory OOB, only for non-passive segment */
+            if (!data_seg->is_passive) {
+                uint64 data_seg_offset;
+                if (data_seg->base_offset.init_expr_type
+                    == INIT_EXPR_TYPE_I64_CONST)
+                    data_seg_offset = data_seg->base_offset.u.u64;
+                else
+                    data_seg_offset = data_seg->base_offset.u.u32;
+
+                if (data_seg_offset > memory_data_size) {
+                    LOG_DEBUG("base_offset(%d) > memory_data_size(%d)",
+                              data_seg_offset, memory_data_size);
+                    aot_set_last_error(
+                        "out of bounds memory access from data segment");
+                    return false;
+                }
+
+                if (data_seg->data_length
+                    > memory_data_size - data_seg_offset) {
+                    LOG_DEBUG(
+                        "base_offset(%d) + length(%d)> memory_data_size(%d)",
+                        data_seg_offset, data_seg->data_length,
+                        memory_data_size);
+                    aot_set_last_error(
+                        "out of bounds memory access from data segment");
+                    return false;
+                }
+            }
+
             total_size = (uint64)sizeof(LLVMValueRef) * data_seg->data_length;
-            if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+            if (total_size > 0
+                && !(values = wasm_runtime_malloc((uint32)total_size))) {
                 aot_set_last_error("allocate memory failed");
                 return false;
             }
@@ -213,7 +243,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
             initializer =
                 LLVMConstArray(INT8_TYPE, values, data_seg->data_length);
-            wasm_runtime_free(values);
+            if (values) {
+                wasm_runtime_free(values);
+                values = NULL;
+            }
             if (!initializer) {
                 aot_set_last_error("llvm build const failed");
                 return false;
@@ -234,7 +267,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         /* Create data_segs globals */
         total_size = (uint64)sizeof(LLVMValueRef) * comp_data->data_seg_count;
-        if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+        if (total_size > 0
+            && !(values = wasm_runtime_malloc((uint32)total_size))) {
             aot_set_last_error("allocate memory failed");
             return false;
         }
@@ -247,7 +281,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         initializer =
             LLVMConstArray(INT8_PTR_TYPE, values, comp_data->data_seg_count);
-        wasm_runtime_free(values);
+        if (values) {
+            wasm_runtime_free(values);
+            values = NULL;
+        }
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -265,7 +302,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         /* Create data_seg_lengths_passive globals */
         total_size = (uint64)sizeof(LLVMValueRef) * comp_data->data_seg_count;
-        if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+        if (total_size > 0
+            && !(values = wasm_runtime_malloc((uint32)total_size))) {
             aot_set_last_error("allocate memory failed");
             return false;
         }
@@ -289,7 +327,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         initializer =
             LLVMConstArray(I32_TYPE, values, comp_data->data_seg_count);
-        wasm_runtime_free(values);
+        if (values) {
+            wasm_runtime_free(values);
+            values = NULL;
+        }
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -312,7 +353,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         AOTTable *table = &comp_data->tables[0];
 
         total_size = (uint64)sizeof(LLVMValueRef) * table->table_init_size;
-        if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+        if (total_size > 0
+            && !(values = wasm_runtime_malloc((uint32)total_size))) {
             aot_set_last_error("allocate memory failed");
             return false;
         }
@@ -324,19 +366,55 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         for (j = 0; j < comp_data->table_init_data_count; j++) {
             AOTTableInitData *table_init_data =
                 comp_data->table_init_data_list[j];
-            uint32 table_idx = table_init_data->table_index;
-            bool is_table64;
+            uint32 table_idx = table_init_data->table_index, length;
+            bool is_table64 = false;
+
+            /* multi-talbe isn't allowed and was already checked in loader */
+            if (table_idx < comp_data->import_table_count) {
+                aot_set_last_error("import table is not supported");
+                if (values)
+                    wasm_runtime_free(values);
+                return false;
+            }
 
             is_table64 = comp_data->tables[table_idx].table_flags & TABLE64_FLAG
                              ? true
                              : false;
 
+            /* TODO: The offset should be i32? table size >= 0x1_0000_0000 is
+             * still valid in table64 spec test */
             bh_assert(table_init_data->mode == 0
                       && table_init_data->table_index == 0
                       && table_init_data->offset.init_expr_type
                              == (is_table64 ? INIT_EXPR_TYPE_I64_CONST
                                             : INIT_EXPR_TYPE_I32_CONST));
             (void)is_table64;
+
+            /* Table.grow is in ref-types proposal, so check for init size */
+            if ((uint32)table_init_data->offset.u.i32
+                > table->table_init_size) {
+                LOG_DEBUG("base_offset(%d) > table->init_size(%d)",
+                          table_init_data->offset.u.i32,
+                          table->table_init_size);
+                aot_set_last_error(
+                    "out of bounds table access from elem segment");
+                if (values)
+                    wasm_runtime_free(values);
+                return false;
+            }
+
+            length = table_init_data->func_index_count;
+            if ((uint32)table_init_data->offset.u.i32 + length
+                > table->table_init_size) {
+                LOG_DEBUG("base_offset(%d) + length(%d)> table->cur_size(%d)",
+                          table_init_data->offset.u.i32, length,
+                          table->table_init_size);
+                aot_set_last_error(
+                    "out of bounds table access from elem segment");
+                if (values)
+                    wasm_runtime_free(values);
+                return false;
+            }
 
             for (k = 0; k < table_init_data->func_index_count; k++) {
                 uint32 table_elem_idx = table_init_data->offset.u.i32 + k;
@@ -353,7 +431,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         }
 
         initializer = LLVMConstArray(I32_TYPE, values, table->table_init_size);
-        wasm_runtime_free(values);
+        if (values) {
+            wasm_runtime_free(values);
+            values = NULL;
+        }
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -375,7 +456,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         /* Create func_ptrs global */
         total_size = (uint64)sizeof(LLVMValueRef)
                      * (comp_data->import_func_count + comp_data->func_count);
-        if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+        if (total_size > 0
+            && !(values = wasm_runtime_malloc((uint32)total_size))) {
             aot_set_last_error("allocate memory failed");
             return false;
         }
@@ -391,7 +473,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         initializer = LLVMConstArray(INT8_PTR_TYPE, values,
                                      comp_data->import_func_count
                                          + comp_data->func_count);
-        wasm_runtime_free(values);
+        if (values) {
+            wasm_runtime_free(values);
+            values = NULL;
+        }
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -411,7 +496,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         /* Create func_type_indexes global */
         total_size = (uint64)sizeof(LLVMValueRef)
                      * (comp_data->import_func_count + comp_data->func_count);
-        if (!(values = wasm_runtime_malloc((uint32)total_size))) {
+        if (total_size > 0
+            && !(values = wasm_runtime_malloc((uint32)total_size))) {
             aot_set_last_error("allocate memory failed");
             return false;
         }
@@ -446,7 +532,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
         initializer = LLVMConstArray(I32_TYPE, values,
                                      comp_data->import_func_count
                                          + comp_data->func_count);
-        wasm_runtime_free(values);
+        if (values) {
+            wasm_runtime_free(values);
+            values = NULL;
+        }
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -623,6 +712,7 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         initializer = LLVMConstArray(INT8_PTR_TYPE, values, exce_msg_count);
         wasm_runtime_free(values);
+        values = NULL;
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -802,10 +892,12 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
     LLVMValueRef is_instance_inited_global, is_instance_inited;
     LLVMBasicBlockRef entry_block, end_block, fail_block = NULL;
     LLVMBasicBlockRef alloc_succ_block, inst_not_inited_block;
+    LLVMBasicBlockRef post_instantiate_funcs_succ_block = NULL;
     AOTMemory *aot_memory = &comp_data->memories[0];
     uint64 memory_data_size = (uint64)aot_memory->num_bytes_per_page
                               * aot_memory->mem_init_page_count;
-    bool memory_data_size_fixed = MEMORY_DATA_SIZE_FIXED(aot_memory);
+    bool memory_data_size_fixed = MEMORY_DATA_SIZE_FIXED(aot_memory),
+         has_post_instantiate_func = false;
     uint64 total_size;
     uint32 i, j, n_native_symbols;
     char func_name[48], buf[128];
@@ -967,7 +1059,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
         LLVMValueRef func_ptrs_global, func_idx_const, p_func_ptr;
         WASMType *wasm_func_type = comp_data->import_funcs[i].func_type;
         NativeSymbol *native_symbol, key = { 0 };
-        char signature[32] = { 0 }, *p = signature;
+        char signature[32] = { 0 }, *p = signature, symbol_name[128] = { 0 };
         bool native_symbol_found = false;
 
         bh_assert(wasm_func_type->result_count <= 1);
@@ -1011,7 +1103,6 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
                                    / sizeof(NativeSymbol);
             }
             else if (IS_MEMORY64) {
-                char symbol_name[128];
                 snprintf(symbol_name, sizeof(symbol_name), "%s%s",
                          comp_data->import_funcs[i].func_name, "64");
                 key.symbol_name = symbol_name;
@@ -1249,9 +1340,6 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
                 data_seg_offset = data_seg->base_offset.u.u32;
             data_seg_length = data_seg->data_length;
 
-            if (data_seg_offset >= memory_data_size)
-                continue;
-
             for (j = 0; j < data_seg_length; j++) {
                 if (data_seg->data[j] != 0)
                     break;
@@ -1259,9 +1347,6 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
             if (j == data_seg_length)
                 /* Ignore copying if all bytes are zero */
                 continue;
-
-            if (data_seg_length > memory_data_size - data_seg_offset)
-                data_seg_length = (uint32)(memory_data_size - data_seg_offset);
 
             if (data_seg_length > 0) {
                 offset_value = comp_ctx->pointer_size == sizeof(uint64)
@@ -1647,6 +1732,9 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
 
     /* Call wasm start function if found */
     if (wasm_module->start_function != (uint32)-1) {
+        has_post_instantiate_func = true;
+        /* TODO: fix start function can be import function issue, seems haven't
+         * init in this step */
         bh_assert(wasm_module->start_function
                   >= wasm_module->import_function_count);
         func_idx =
@@ -1663,6 +1751,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
     for (i = 0; i < export_count; i++) {
         if (aot_exports[i].kind == EXPORT_KIND_FUNC
             && !strcmp(aot_exports[i].name, "__wasm_call_ctors")) {
+            has_post_instantiate_func = true;
             bh_assert(aot_exports[i].index >= comp_data->import_func_count);
             func_idx = aot_exports[i].index - comp_data->import_func_count;
 
@@ -1679,6 +1768,36 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
                 break;
             }
         }
+    }
+
+    /* Check the exception from post instantiate function calls */
+    if (has_post_instantiate_func) {
+        if (!(post_instantiate_funcs_succ_block = LLVMAppendBasicBlockInContext(
+                  comp_ctx->context, func, "post_instantiate_funcs_succ"))) {
+            aot_set_last_error("add LLVM basic block failed.");
+            return false;
+        }
+        LLVMMoveBasicBlockAfter(post_instantiate_funcs_succ_block,
+                                LLVMGetInsertBlock(comp_ctx->builder));
+
+        exce_id_global = LLVMGetNamedGlobal(comp_ctx->module, "exception_id");
+        bh_assert(exce_id_global);
+        if (!(exce_id = LLVMBuildLoad2(comp_ctx->builder, I32_TYPE,
+                                       exce_id_global, "exce_id"))) {
+            aot_set_last_error("llvm build load failed.");
+            return false;
+        }
+
+        cmp = LLVMBuildICmp(comp_ctx->builder, LLVMIntEQ, exce_id, I32_ZERO,
+                            "cmp");
+        if (!LLVMBuildCondBr(comp_ctx->builder, cmp,
+                             post_instantiate_funcs_succ_block, end_block)) {
+            aot_set_last_error("llvm build conditional branch failed.");
+            return false;
+        }
+
+        LLVMPositionBuilderAtEnd(comp_ctx->builder,
+                                 post_instantiate_funcs_succ_block);
     }
 
     if (!LLVMBuildStore(comp_ctx->builder, I8_ONE, is_instance_inited_global)) {
@@ -2724,13 +2843,19 @@ add_llvm_func(const AOTCompContext *comp_ctx, LLVMModuleRef module,
     if (!func_name && wasm_func->name && strlen(wasm_func->name))
         func_name = wasm_func->name;
 
-    if (func_name && !comp_ctx->no_sandbox_mode) {
+    if (func_name) {
         /* Avoid calling to these memcpy/memset functions from the
            code generated by LLVMBuildMemCpy and LLVMBuildMemSet */
         if (!strcmp(func_name, "memcpy"))
             func_name = "__aot_memcpy";
         else if (!strcmp(func_name, "memset"))
             func_name = "__aot_memset";
+        /* Avoid calling these malloc/free functions from the
+           wasm_instance_create/wasm_instance_destroy functions */
+        if (!strcmp(func_name, "malloc"))
+            func_name = "__aot_malloc";
+        else if (!strcmp(func_name, "free"))
+            func_name = "__aot_free";
     }
 
     if (!func_name) {
@@ -4247,19 +4372,11 @@ aot_get_memory_base_addr(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx)
     memory_data_global = LLVMGetNamedGlobal(comp_ctx->module, "memory_data");
     bh_assert(memory_data_global);
 
-    AOTMemory *aot_memory = &comp_ctx->comp_data->memories[0];
-    bool memory_data_size_fixed = MEMORY_DATA_SIZE_FIXED(aot_memory);
-
-    if (!memory_data_size_fixed) {
-        if (!(memory_data =
-                  LLVMBuildLoad2(comp_ctx->builder, INT8_PTR_TYPE,
-                                 memory_data_global, "memory_data"))) {
-            aot_set_last_error("llvm build load failed");
-            return NULL;
-        }
+    if (!(memory_data = LLVMBuildLoad2(comp_ctx->builder, INT8_PTR_TYPE,
+                                       memory_data_global, "memory_data"))) {
+        aot_set_last_error("llvm build load failed");
+        return NULL;
     }
-    else
-        memory_data = func_ctx->memory_data;
 
     return memory_data;
 }

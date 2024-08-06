@@ -239,7 +239,9 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                 }
                 else {
                     frame_ip--;
-                    read_leb_uint32(frame_ip, frame_ip_end, type_index);
+                    read_leb_int32(frame_ip, frame_ip_end, type_index);
+                    /* type index was checked in wasm loader */
+                    bh_assert(type_index < comp_ctx->comp_data->type_count);
                     func_type = comp_ctx->comp_data->func_types[type_index];
                     param_count = func_type->param_count;
                     param_types = func_type->types;
@@ -258,7 +260,9 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
             case EXT_OP_LOOP:
             case EXT_OP_IF:
             {
-                read_leb_uint32(frame_ip, frame_ip_end, type_index);
+                read_leb_int32(frame_ip, frame_ip_end, type_index);
+                /* type index was checked in wasm loader */
+                bh_assert(type_index < comp_ctx->comp_data->type_count);
                 func_type = comp_ctx->comp_data->func_types[type_index];
                 param_count = func_type->param_count;
                 param_types = func_type->types;
@@ -2112,16 +2116,6 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                         break;
                     }
 
-                    case SIMD_i32x4_narrow_i64x2_s:
-                    case SIMD_i32x4_narrow_i64x2_u:
-                    {
-                        if (!aot_compile_simd_i32x4_narrow_i64x2(
-                                comp_ctx, func_ctx,
-                                SIMD_i32x4_narrow_i64x2_s == opcode))
-                            return false;
-                        break;
-                    }
-
                     case SIMD_i32x4_extend_low_i16x8_s:
                     case SIMD_i32x4_extend_high_i16x8_s:
                     {
@@ -2161,30 +2155,10 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                         break;
                     }
 
-                    case SIMD_i32x4_add_sat_s:
-                    case SIMD_i32x4_add_sat_u:
-                    {
-                        if (!aot_compile_simd_i32x4_saturate(
-                                comp_ctx, func_ctx, V128_ADD,
-                                opcode == SIMD_i32x4_add_sat_s))
-                            return false;
-                        break;
-                    }
-
                     case SIMD_i32x4_sub:
                     {
                         if (!aot_compile_simd_i32x4_arith(comp_ctx, func_ctx,
                                                           V128_SUB))
-                            return false;
-                        break;
-                    }
-
-                    case SIMD_i32x4_sub_sat_s:
-                    case SIMD_i32x4_sub_sat_u:
-                    {
-                        if (!aot_compile_simd_i32x4_saturate(
-                                comp_ctx, func_ctx, V128_SUB,
-                                opcode == SIMD_i32x4_add_sat_s))
                             return false;
                         break;
                     }
@@ -2221,13 +2195,6 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                     {
                         if (!aot_compile_simd_i32x4_dot_i16x8(comp_ctx,
                                                               func_ctx))
-                            return false;
-                        break;
-                    }
-
-                    case SIMD_i32x4_avgr_u:
-                    {
-                        if (!aot_compile_simd_i32x4_avgr_u(comp_ctx, func_ctx))
                             return false;
                         break;
                     }
@@ -2388,13 +2355,6 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                         break;
                     }
 
-                    case SIMD_f32x4_round:
-                    {
-                        if (!aot_compile_simd_f32x4_round(comp_ctx, func_ctx))
-                            return false;
-                        break;
-                    }
-
                     case SIMD_f32x4_sqrt:
                     {
                         if (!aot_compile_simd_f32x4_sqrt(comp_ctx, func_ctx))
@@ -2444,13 +2404,6 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                     case SIMD_f64x2_neg:
                     {
                         if (!aot_compile_simd_f64x2_neg(comp_ctx, func_ctx))
-                            return false;
-                        break;
-                    }
-
-                    case SIMD_f64x2_round:
-                    {
-                        if (!aot_compile_simd_f64x2_round(comp_ctx, func_ctx))
                             return false;
                         break;
                     }
@@ -2625,69 +2578,6 @@ aot_compile_wasm(AOTCompContext *comp_ctx)
 
     return true;
 }
-
-#if !(defined(_WIN32) || defined(_WIN32_))
-char *
-aot_generate_tempfile_name(const char *prefix, const char *extension,
-                           char *buffer, uint32 len)
-{
-    int fd, name_len;
-
-    name_len = snprintf(buffer, len, "%s-XXXXXX", prefix);
-
-    /* Set umask to only allow owner access */
-    mode_t oldmask = umask(0077); 
-    if ((fd = mkstemp(buffer)) <= 0) {
-        aot_set_last_error("make temp file failed.");
-        umask(oldmask); 
-        return NULL;
-    }
-
-    /* Restore the old umask */
-    umask(oldmask); 
-
-    /* close and remove temp file */
-    close(fd);
-    unlink(buffer);
-
-    /* Check if buffer length is enough */
-    /* name_len + '.' + extension + '\0' */
-    if (name_len + 1 + strlen(extension) + 1 > len) {
-        aot_set_last_error("temp file name too long.");
-        return NULL;
-    }
-
-    snprintf(buffer + name_len, len - name_len, ".%s", extension);
-    return buffer;
-}
-#else
-
-errno_t
-_mktemp_s(char *nameTemplate, size_t sizeInChars);
-
-char *
-aot_generate_tempfile_name(const char *prefix, const char *extension,
-                           char *buffer, uint32 len)
-{
-    int name_len;
-
-    name_len = snprintf(buffer, len, "%s-XXXXXX", prefix);
-
-    if (_mktemp_s(buffer, name_len + 1) != 0) {
-        return NULL;
-    }
-
-    /* Check if buffer length is enough */
-    /* name_len + '.' + extension + '\0' */
-    if (name_len + 1 + strlen(extension) + 1 > len) {
-        aot_set_last_error("temp file name too long.");
-        return NULL;
-    }
-
-    snprintf(buffer + name_len, len - name_len, ".%s", extension);
-    return buffer;
-}
-#endif /* end of !(defined(_WIN32) || defined(_WIN32_)) */
 
 bool
 aot_emit_llvm_file(AOTCompContext *comp_ctx, const char *file_name)

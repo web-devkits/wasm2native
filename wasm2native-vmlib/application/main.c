@@ -128,12 +128,26 @@ app_instance_repl()
     free(cmd);
 }
 
+static void
+check_and_print_exception()
+{
+    int32 exce_id = wasm_get_exception();
+    const char*exce_msg;
+    if (exce_id) {
+        exce_msg = wasm_get_exception_msg();
+        os_printf("Exception: %s\n", exce_msg);
+    }
+    else {
+        os_printf("Exception: unknown error\n");
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
-    const char *func_name = NULL, *exce_msg;
+    const char *func_name = NULL;
     char *app_name = argv[0], **argv1 = NULL;
-    int32 exce_id, i, ret = -1, argc1;
+    int32 i, ret = -1, argc1;
     bool is_repl_mode = false;
 
     /* Process options. */
@@ -172,7 +186,8 @@ main(int argc, char *argv[])
     wasm_instance_create();
 
     if (!wasm_instance_is_created()) {
-        os_printf("Create wasm instance failed.");
+        os_printf("Create wasm instance failed.\n");
+        check_and_print_exception();
         goto fail;
     }
 
@@ -190,14 +205,7 @@ main(int argc, char *argv[])
     }
 
     if (ret) {
-        exce_id = wasm_get_exception();
-        if (exce_id) {
-            exce_msg = wasm_get_exception_msg();
-            os_printf("Exception: %s\n", exce_msg);
-        }
-        else {
-            os_printf("Exception: unknown error\n");
-        }
+        check_and_print_exception();
     }
 
 fail:

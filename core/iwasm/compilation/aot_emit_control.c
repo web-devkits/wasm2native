@@ -238,7 +238,7 @@ handle_next_reachable_block(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
             /* Store extra return values to function parameters */
             if (i != 0) {
                 LLVMValueRef res;
-                uint32 param_index = func_type->param_count + i;
+                uint32 param_index = func_type->param_count + i - 1;
                 if (!(res = LLVMBuildStore(
                           comp_ctx->builder, block->result_phis[i],
                           LLVMGetParam(func_ctx->func, param_index)))) {
@@ -929,6 +929,7 @@ aot_compile_op_br_table(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                         PUSH(values[j], target_block->result_types[j]);
                     }
                     wasm_runtime_free(values);
+                    values = NULL;
                 }
                 target_block->is_reachable = true;
                 if (i == br_count)
@@ -954,6 +955,7 @@ aot_compile_op_br_table(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                         PUSH(values[j], target_block->param_types[j]);
                     }
                     wasm_runtime_free(values);
+                    values = NULL;
                 }
                 if (i == br_count)
                     default_llvm_block = target_block->llvm_entry_block;
@@ -1016,7 +1018,7 @@ aot_compile_op_return(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
             LLVMValueRef res;
             result_index = block_func->result_count - 1 - i;
             POP(value, block_func->result_types[result_index]);
-            param_index = func_type->param_count + result_index;
+            param_index = func_type->param_count + result_index - 1;
             if (!(res = LLVMBuildStore(
                       comp_ctx->builder, value,
                       LLVMGetParam(func_ctx->func, param_index)))) {

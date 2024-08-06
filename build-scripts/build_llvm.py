@@ -158,6 +158,8 @@ def build_llvm(llvm_dir, platform, backends, projects, use_clang=False, extra_fl
     BUILD_CMD = "cmake --build . --target package" + (
         " --config Release" if "windows" == platform else ""
     )
+    if "windows" == platform:
+        BUILD_CMD += " --parallel " + str(os.cpu_count())
     print(f"\nbuild command: {BUILD_CMD}\n")
     subprocess.check_call(shlex.split(BUILD_CMD), cwd=build_dir)
 
@@ -254,17 +256,17 @@ def main():
         "arc": {
             "repo": "https://github.com/llvm/llvm-project.git",
             "repo_ssh": "git@github.com:llvm/llvm-project.git",
-            "branch": "release/18.x",
+            "branch": "release/19.x",
         },
         "xtensa": {
             "repo": "https://github.com/espressif/llvm-project.git",
             "repo_ssh": "git@github.com:espressif/llvm-project.git",
-            "branch": "xtensa_release_18.x",
+            "branch": "xtensa_release_17.0.1",
         },
         "default": {
             "repo": "https://github.com/llvm/llvm-project.git",
             "repo_ssh": "git@github.com:llvm/llvm-project.git",
-            "branch": "release/18.x",
+            "branch": "release/19.x",
         },
     }
 
