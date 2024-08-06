@@ -477,7 +477,7 @@ aot_create_comp_data(WASMModule *module, aot_comp_option_t option)
     if (comp_data->func_count && !(comp_data->funcs = aot_create_funcs(module)))
         goto fail;
 
-#if WASM_ENABLE_CUSTOM_NAME_SECTION != 0
+#if W2N_ENABLE_CUSTOM_NAME_SECTION != 0
     /* Create custom name section */
     comp_data->name_section_buf = module->name_section_buf;
     comp_data->name_section_buf_end = module->name_section_buf_end;

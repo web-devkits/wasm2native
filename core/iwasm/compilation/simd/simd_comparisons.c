@@ -86,7 +86,7 @@ fail:
 
 static bool
 integer_vector_compare(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
-                        IntCond cond, LLVMTypeRef vector_type)
+                       IntCond cond, LLVMTypeRef vector_type)
 {
     LLVMValueRef vec1, vec2, result;
     LLVMIntPredicate int_pred;

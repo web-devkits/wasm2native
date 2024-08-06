@@ -437,7 +437,7 @@ destroy_wasm_type(WASMType *type)
 }
 
 static bool
-load_init_expr(const uint8 **p_buf, const uint8 *buf_end,
+load_init_expr(WASMModule *module, const uint8 **p_buf, const uint8 *buf_end,
                InitializerExpression *init_expr, uint8 type, char *error_buf,
                uint32 error_buf_size)
 {
@@ -501,8 +501,33 @@ load_init_expr(const uint8 **p_buf, const uint8 *buf_end,
         }
         /* get_global */
         case INIT_EXPR_TYPE_GET_GLOBAL:
+        {
+            uint32 global_idx;
+
             read_leb_uint32(p, p_end, init_expr->u.global_index);
+            global_idx = init_expr->u.global_index;
+
+            /*
+             * Currently, constant expressions occurring as initializers
+             * of globals are further constrained in that contained
+             * global.get instructions are
+             * only allowed to refer to imported globals.
+             *
+             * https://webassembly.github.io/spec/core/valid/instructions.html#constant-expressions
+             */
+            if (global_idx >= module->import_global_count) {
+                set_error_buf_v(error_buf, error_buf_size, "unknown global %u",
+                                global_idx);
+                goto fail;
+            }
+            if (module->import_globals[global_idx].u.global.is_mutable) {
+                set_error_buf_v(error_buf, error_buf_size,
+                                "constant expression required");
+                goto fail;
+            }
+
             break;
+        }
         default:
         {
             set_error_buf(error_buf, error_buf_size,
@@ -740,6 +765,28 @@ load_table_import(const uint8 **p_buf, const uint8 *buf_end,
                           &declare_max_size);
 
     *p_buf = p;
+
+    /* (table (export "table") 10 20 funcref) */
+    if (!strcmp("spectest", sub_module_name)) {
+        const uint32 spectest_table_init_size = 10;
+        const uint32 spectest_table_max_size = 20;
+
+        if (strcmp("table", table_name)) {
+            set_error_buf(error_buf, error_buf_size,
+                          "incompatible import type or unknown import");
+            return false;
+        }
+
+        if (declare_init_size > spectest_table_init_size
+            || declare_max_size < spectest_table_max_size) {
+            set_error_buf(error_buf, error_buf_size,
+                          "incompatible import type");
+            return false;
+        }
+
+        declare_init_size = spectest_table_init_size;
+        declare_max_size = spectest_table_max_size;
+    }
 
     /* now we believe all declaration are ok */
     table->elem_type = declare_elem_type;
@@ -1645,8 +1692,8 @@ load_global_section(const uint8 *buf, const uint8 *buf_end, WASMModule *module,
             global->is_mutable = mutable ? true : false;
 
             /* initialize expression */
-            if (!load_init_expr(&p, p_end, &(global->init_expr), global->type,
-                                error_buf, error_buf_size))
+            if (!load_init_expr(module, &p, p_end, &(global->init_expr),
+                                global->type, error_buf, error_buf_size))
                 return false;
 
             if (INIT_EXPR_TYPE_GET_GLOBAL == global->init_expr.init_expr_type) {
@@ -1870,6 +1917,18 @@ fail:
 }
 
 static bool
+is_table_table64(WASMModule *module, uint32 table_idx)
+{
+    uint8 table_flag = 0;
+    if (table_idx < module->import_table_count)
+        table_flag = module->import_tables[table_idx].u.table.flags;
+    else
+        table_flag =
+            module->tables[table_idx - module->import_table_count].flags;
+    return (table_flag & TABLE64_FLAG) ? true : false;
+}
+
+static bool
 load_table_segment_section(const uint8 *buf, const uint8 *buf_end,
                            WASMModule *module, char *error_buf,
                            uint32 error_buf_size)
@@ -1907,20 +1966,9 @@ load_table_segment_section(const uint8 *buf, const uint8 *buf_end,
                                   &table_segment->table_index, error_buf,
                                   error_buf_size))
                 return false;
-            if (table_segment->table_index < module->import_table_count)
-                is_table64 = module->import_tables[table_segment->table_index]
-                                         .u.table.flags
-                                     & TABLE64_FLAG
-                                 ? true
-                                 : false;
-            else
-                is_table64 = module->tables[table_segment->table_index
-                                            - module->import_table_count]
-                                         .flags
-                                     & TABLE64_FLAG
-                                 ? true
-                                 : false;
-            if (!load_init_expr(&p, p_end, &table_segment->base_offset,
+
+            is_table64 = is_table_table64(module, table_segment->table_index);
+            if (!load_init_expr(module, &p, p_end, &table_segment->base_offset,
                                 is_table64 ? VALUE_TYPE_I64 : VALUE_TYPE_I32,
                                 error_buf, error_buf_size))
                 return false;
@@ -2019,8 +2067,8 @@ load_data_segment_section(const uint8 *buf, const uint8 *buf_end,
                 mem_offset_type = memory_flag & MEMORY64_FLAG ? VALUE_TYPE_I64
                                                               : VALUE_TYPE_I32;
 
-                if (!load_init_expr(&p, p_end, &init_expr, mem_offset_type,
-                                    error_buf, error_buf_size))
+                if (!load_init_expr(module, &p, p_end, &init_expr,
+                                    mem_offset_type, error_buf, error_buf_size))
                     return false;
             }
 
@@ -5427,18 +5475,7 @@ wasm_loader_prepare_bytecode(WASMModule *module, WASMFunction *func,
                     goto fail;
                 }
 
-                if (table_idx < module->import_table_count)
-                    is_table64 = module->import_tables[table_idx].u.table.flags
-                                         & TABLE64_FLAG
-                                     ? true
-                                     : false;
-                else
-                    is_table64 =
-                        module->tables[table_idx - module->import_table_count]
-                                    .flags
-                                & TABLE64_FLAG
-                            ? true
-                            : false;
+                is_table64 = is_table_table64(module, table_idx);
 
                 /* skip elem idx */
                 if (is_table64)

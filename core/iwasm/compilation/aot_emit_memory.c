@@ -1064,23 +1064,21 @@ static LLVMValueRef
 check_bulk_memory_overflow(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
                            LLVMValueRef offset, LLVMValueRef bytes)
 {
-    LLVMValueRef maddr, max_addr, cmp, mem_size, addr;
-    LLVMValueRef mem_base_addr;
-    LLVMValueRef cur_page_count_global;
+    LLVMValueRef maddr, max_addr, mem_base_addr, cmp;
+    LLVMValueRef mem_data_size, mem_data_size_global;
     LLVMBasicBlockRef block_curr = LLVMGetInsertBlock(comp_ctx->builder);
     LLVMBasicBlockRef check_succ;
 
     if (!(mem_base_addr = aot_get_memory_base_addr(comp_ctx, func_ctx)))
         return false;
 
-    POP_I32(addr);
+    mem_data_size_global =
+        LLVMGetNamedGlobal(comp_ctx->module, "memory_data_size");
+    bh_assert(mem_data_size_global);
 
-    cur_page_count_global =
-        LLVMGetNamedGlobal(comp_ctx->module, "cur_page_count");
-    bh_assert(cur_page_count_global);
-
-    if (!(mem_size = LLVMBuildLoad2(comp_ctx->builder, I32_TYPE,
-                                    cur_page_count_global, "cur_page_count"))) {
+    if (!(mem_data_size =
+              LLVMBuildLoad2(comp_ctx->builder, I64_TYPE, mem_data_size_global,
+                             "mem_data_size"))) {
         aot_set_last_error("llvm build load failed.");
         goto fail;
     }
@@ -1088,13 +1086,12 @@ check_bulk_memory_overflow(AOTCompContext *comp_ctx, AOTFuncContext *func_ctx,
     offset =
         LLVMBuildZExt(comp_ctx->builder, offset, I64_TYPE, "extend_offset");
     bytes = LLVMBuildZExt(comp_ctx->builder, bytes, I64_TYPE, "extend_len");
-    mem_size =
-        LLVMBuildZExt(comp_ctx->builder, mem_size, I64_TYPE, "extend_size");
 
     BUILD_OP(Add, offset, bytes, max_addr, "max_addr");
 
     if (!comp_ctx->no_sandbox_mode) {
-        BUILD_ICMP(LLVMIntUGT, max_addr, mem_size, cmp, "cmp_max_mem_addr");
+        BUILD_ICMP(LLVMIntUGT, max_addr, mem_data_size, cmp,
+                   "cmp_max_mem_addr");
         ADD_BASIC_BLOCK(check_succ, "check_succ");
         LLVMMoveBasicBlockAfter(check_succ, block_curr);
         if (!aot_emit_exception(comp_ctx, func_ctx,
