@@ -372,6 +372,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
             /* multi-talbe isn't allowed and was already checked in loader */
             if (table_idx < comp_data->import_table_count) {
                 aot_set_last_error("import table is not supported");
+                if (values)
+                    wasm_runtime_free(values);
                 return false;
             }
 
@@ -396,6 +398,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
                           table->table_init_size);
                 aot_set_last_error(
                     "out of bounds table access from elem segment");
+                if (values)
+                    wasm_runtime_free(values);
                 return false;
             }
 
@@ -407,6 +411,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
                           table->table_init_size);
                 aot_set_last_error(
                     "out of bounds table access from elem segment");
+                if (values)
+                    wasm_runtime_free(values);
                 return false;
             }
 
@@ -706,6 +712,7 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
         initializer = LLVMConstArray(INT8_PTR_TYPE, values, exce_msg_count);
         wasm_runtime_free(values);
+        values = NULL;
         if (!initializer) {
             aot_set_last_error("llvm build const failed");
             return false;
@@ -890,7 +897,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
     uint64 memory_data_size = (uint64)aot_memory->num_bytes_per_page
                               * aot_memory->mem_init_page_count;
     bool memory_data_size_fixed = MEMORY_DATA_SIZE_FIXED(aot_memory),
-         post_instantiate_funcs_exists = false;
+         has_post_instantiate_func = false;
     uint64 total_size;
     uint32 i, j, n_native_symbols;
     char func_name[48], buf[128];
@@ -1725,7 +1732,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
 
     /* Call wasm start function if found */
     if (wasm_module->start_function != (uint32)-1) {
-        post_instantiate_funcs_exists = true;
+        has_post_instantiate_func = true;
         /* TODO: fix start function can be import function issue, seems haven't
          * init in this step */
         bh_assert(wasm_module->start_function
@@ -1744,7 +1751,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
     for (i = 0; i < export_count; i++) {
         if (aot_exports[i].kind == EXPORT_KIND_FUNC
             && !strcmp(aot_exports[i].name, "__wasm_call_ctors")) {
-            post_instantiate_funcs_exists = true;
+            has_post_instantiate_func = true;
             bh_assert(aot_exports[i].index >= comp_data->import_func_count);
             func_idx = aot_exports[i].index - comp_data->import_func_count;
 
@@ -1764,7 +1771,7 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
     }
 
     /* Check the exception from post instantiate function calls */
-    if (post_instantiate_funcs_exists) {
+    if (has_post_instantiate_func) {
         if (!(post_instantiate_funcs_succ_block = LLVMAppendBasicBlockInContext(
                   comp_ctx->context, func, "post_instantiate_funcs_succ"))) {
             aot_set_last_error("add LLVM basic block failed.");
