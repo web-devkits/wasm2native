@@ -1105,6 +1105,9 @@ def compile_wasm_to_object(wasm_tempfile, native_tempfile, runner, opts, r, outp
 
 def link_object_to_native(native_tempfile, runner, r):
     cmd = ["gcc", "-O3", "-o", native_tempfile, native_tempfile + '.o', opts.vmlib_file]
+    if test_target == 'x86_32' or test_target == 'i386':
+        cmd.append("-m32")
+        cmd.append("-lm")
     log("Running: %s" % " ".join(cmd))
     if not runner:
         subprocess.check_call(cmd)
@@ -1426,7 +1429,8 @@ if __name__ == "__main__":
             log("Removing tempfiles")
             os.remove(wast_tempfile)
             os.remove(wasm_tempfile)
-            os.remove(native_tempfile + ".o")
+            if os.path.exists(native_tempfile + ".o"):
+                os.remove(native_tempfile + ".o")
             os.remove(native_tempfile)
 
             # remove the files under /tempfiles/ and copy of .wasm files

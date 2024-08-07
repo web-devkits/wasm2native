@@ -60,7 +60,7 @@ def ignore_the_case(
     if case_name in ["comments", "inline-module", "names"]:
         return True
 
-    if case_name in ["imports", "linking", "simd_linking"]:
+    if case_name in ["imports", "linking"]:
         return True
 
     # wasm2native don't support some opcodes, 
