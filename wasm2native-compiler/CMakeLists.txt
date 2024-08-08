@@ -164,6 +164,12 @@ if (NOT MSVC)
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wformat -Wformat-security \
                                        -ffunction-sections -fdata-sections \
                                        -Wno-unused-parameter -Wno-pedantic")
+
+  if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -flto -fvisibility=hidden \
+                                         -z noexecstack -Wl,-z,relro")
+  endif()
+
   # Remove the extra spaces for better make log
   string (REGEX REPLACE "  *" " " CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
 endif()
