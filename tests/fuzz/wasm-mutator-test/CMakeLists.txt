@@ -3,6 +3,13 @@
 
 cmake_minimum_required (VERSION 3.14)
 
+if (NOT DEFINED CMAKE_C_COMPILER)
+  set (CMAKE_C_COMPILER "clang")
+endif ()
+if (NOT DEFINED CMAKE_CXX_COMPILER)
+  set (CMAKE_CXX_COMPILER "clang++")
+endif ()
+
 include(CheckPIESupported)
 
 if (NOT DEFINED W2N_BUILD_PLATFORM)
@@ -58,7 +65,7 @@ if (NOT W2N_BUILD_TARGET)
     set (W2N_BUILD_TARGET "RISCV32")
   else ()
     message (FATAL_ERROR "Unsupported CMAKE_HOST_SYSTEM_PROCESSOR "
-	                 "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+                         "${CMAKE_HOST_SYSTEM_PROCESSOR}")
   endif()
 
   if (W2N_BUILD_PLATFORM STREQUAL "windows")
@@ -115,7 +122,7 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE Debug)
 endif (NOT CMAKE_BUILD_TYPE)
 message ("-- CMAKE_BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
 
@@ -125,7 +132,7 @@ endif ()
 
 # Enable LLVM
 if (NOT W2N_BUILD_WITH_CUSTOM_LLVM)
-  set (LLVM_SRC_ROOT "${PROJECT_SOURCE_DIR}/../core/deps/llvm")
+  set (LLVM_SRC_ROOT "${PROJECT_SOURCE_DIR}/../../../core/deps/llvm")
   if (W2N_BUILD_PLATFORM STREQUAL "windows")
     if (NOT EXISTS "${LLVM_SRC_ROOT}/win32build")
       message (FATAL_ERROR "Cannot find LLVM dir: ${LLVM_SRC_ROOT}/win32build")
@@ -168,8 +175,8 @@ if (NOT MSVC)
   string (REGEX REPLACE "  *" " " CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
 endif()
 
-set (SHARED_DIR ../core/shared)
-set (IWASM_DIR ../core/iwasm)
+set (SHARED_DIR ../../../core/shared)
+set (IWASM_DIR ../../../core/iwasm)
 
 include_directories (${SHARED_DIR}/include ${IWASM_DIR}/include)
 
@@ -217,34 +224,6 @@ if (WIN32)
   add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
-# Sanitizers
-
-if (NOT DEFINED W2N_BUILD_SANITIZER)
-  set(W2N_BUILD_SANITIZER $ENV{W2N_BUILD_SANITIZER})
-endif ()
-
-if (NOT DEFINED W2N_BUILD_SANITIZER)
-  set(W2N_BUILD_SANITIZER "")
-elseif (W2N_BUILD_SANITIZER STREQUAL "asan")
-  if (NOT W2N_BUILD_JIT EQUAL 1)
-    set (ASAN_OPTIONS "verbosity=2 debug=true ")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all" )
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
-  endif()
-elseif (W2N_BUILD_SANITIZER STREQUAL "ubsan")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=all -fno-sanitize=alignment" )
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
-elseif (W2N_BUILD_SANITIZER STREQUAL "tsan")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fno-omit-frame-pointer -fsanitize=thread -fno-sanitize-recover=all" )
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
-elseif (NOT (W2N_BUILD_SANITIZER STREQUAL "") )
-  message(SEND_ERROR "Unsupported sanitizer: ${W2N_BUILD_SANITIZER}")
-endif()
-
-if (NOT W2N_BUILD_SANITIZER STREQUAL "")
-  message ("-- Sanitizer ${W2N_BUILD_SANITIZER} enabled")
-endif ()
-
 # message ("-- CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 
 add_library (vmlib
@@ -257,9 +236,40 @@ add_library (vmlib
 
 add_library (aotclib ${IWASM_COMPL_SOURCE})
 
-add_executable (wasm2native main.c)
+add_definitions(-DW2N_ENABLE_FUZZ_TEST=1)
+
+# Enable fuzzer
+add_compile_options(-fsanitize=fuzzer)
+add_link_options(-fsanitize=fuzzer)
+
+# if not calling from oss-fuzz helper, enable all support sanitizers
+# oss-fuzz will define FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION in CFLAGS and CXXFLAGS
+set (CFLAGS_ENV $ENV{CFLAGS})
+string (FIND "${CFLAGS_ENV}" "-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION" IN_OSS_FUZZ)
+if (IN_OSS_FUZZ EQUAL -1)
+  message("[ceith]:Enable ASan and UBSan in non-oss-fuzz environment")
+  add_compile_options(
+    -fprofile-instr-generate -fcoverage-mapping
+    -fno-sanitize-recover=all
+    -fsanitize=address,undefined
+    # reference: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+    # -fsanitize=undefined: All of the checks listed above other than float-divide-by-zero,
+    #     unsigned-integer-overflow, implicit-conversion, local-bounds and
+    #     the nullability-* group of checks.
+    #
+    # for now, we disable below from UBSan
+    # -alignment
+    # -implicit-conversion
+    #
+    -fsanitize=float-divide-by-zero,unsigned-integer-overflow,local-bounds,nullability
+    -fno-sanitize=alignment
+  )
+  add_link_options(-fsanitize=address -fprofile-instr-generate)
+endif ()
+
+add_executable (wasm_mutator_fuzz wasm_mutator_fuzz.cc)
 check_pie_supported()
-set_target_properties (wasm2native PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties (wasm_mutator_fuzz PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if (LLVM_LINK_LLVM_DYLIB)
   set(W2NC_LINK_LLVM_LIBS LLVM)
@@ -268,16 +278,14 @@ else()
 endif()
 
 if (NOT MSVC)
-  target_link_libraries (wasm2native aotclib vmlib ${W2NC_LINK_LLVM_LIBS} ${lib_ubsan}
+  target_link_libraries (wasm_mutator_fuzz aotclib vmlib ${W2NC_LINK_LLVM_LIBS} ${lib_ubsan}
                          -lm -lpthread ${lib_lldb} ${UV_A_LIBS})
   if (MINGW)
-      target_link_libraries (wasm2native ssp.a ws2_32)
+      target_link_libraries (wasm_mutator_fuzz ssp.a ws2_32)
   else()
-      target_link_libraries (wasm2native -ldl)
+      target_link_libraries (wasm_mutator_fuzz -ldl)
   endif()
 else()
-  target_link_libraries (wasm2native aotclib vmlib  ${lib_lldb} ${W2NC_LINK_LLVM_LIBS} ${lib_ubsan}
+  target_link_libraries (wasm_mutator_fuzz aotclib vmlib  ${lib_lldb} ${W2NC_LINK_LLVM_LIBS} ${lib_ubsan}
                          ${UV_A_LIBS})
 endif()
-
-install (TARGETS wasm2native DESTINATION bin)

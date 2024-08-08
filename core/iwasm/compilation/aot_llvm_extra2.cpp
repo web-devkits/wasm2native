@@ -113,6 +113,7 @@ convert(LLVMCodeModel code_model)
         case LLVMCodeModelMedium:
             return llvm::CodeModel::Medium;
         case LLVMCodeModelLarge:
+        default:
             return llvm::CodeModel::Large;
     }
     bh_assert(0);
