@@ -7,6 +7,7 @@ The `wasm2native` project reuses some components from other open source project:
 - **Dhrystone**: for the test benchmark dhrystone
 - **stream**: for the test standalone case stream
 - **tiny-AES-c**: for the test standalone case test-aes
+- **Emscripten**: for the test standalone case test-printf
 
 |  third party components | version number | latest release | vendor pages | CVE details |
 | --- | --- | --- | --- | --- |
@@ -15,6 +16,7 @@ The `wasm2native` project reuses some components from other open source project:
 | Dhrystone | 2.1 | 2.1 | https://fossies.org/linux/privat/old/ | |
 | stream | 5.10 | 5.10 | | |
 | tiny-AES-c | 1.0.0 | 1.0.0 | https://github.com/kokke/tiny-AES-c | |
+| Emscripten | 3.1.64 | 3.1.64 | https://github.com/emscripten-core/emscripten | |
 
 ## Licenses
 
@@ -37,3 +39,7 @@ The `wasm2native` project reuses some components from other open source project:
 ### tiny-AES-c
 
 [LICENSE](./tests/standalone/test-aes/unlicense.txt)
+
+### Emscripten
+
+[LICENSE](./tests/standalone/test-printf/LICENSE)
