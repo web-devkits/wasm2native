@@ -1155,16 +1155,16 @@ def run_wasm_with_repl(wasm_tempfile, native_tempfile, opts, r):
 
     return r
 
-def create_tmpfiles(wast_name):
-    tempfiles = []
+def create_tmpfiles(wast_name) -> Tuple[str, str, str]:
 
-    tempfiles.append(create_tmp_file(".wast"))
-    tempfiles.append(create_tmp_file(".wasm"))
-    tempfiles.append(create_tmp_file(".w2n"))
+    wast = create_tmp_file(".wast")
+    wasm = create_tmp_file(".wasm")
+    native = create_tmp_file(".w2n")
+    native_obj = native + ".o"
 
     # add these temp file to temporal repo, will be deleted when finishing the test
-    temp_file_repo.extend(tempfiles)
-    return tempfiles
+    temp_file_repo.extend([wast, wasm, native, native_obj])
+    return wast, wasm, native
 
 def test_assert_with_exception(form, wast_tempfile, wasm_tempfile, native_tempfile, opts, r, loadable = True):
     details_inside_ast = get_module_exp_from_assert(form)
@@ -1227,6 +1227,14 @@ if __name__ == "__main__":
     wast_tempfile = create_tmp_file(".wast")
     wasm_tempfile = create_tmp_file(".wasm")
     native_tempfile = create_tmp_file(".w2n")
+
+    # could be potientially compiled to object and to native 
+    # with the future following call test_assert_xxx, 
+    # add them to temp_file_repo now even if no actual following file, 
+    # it will be simple ignore during final deletion if not exist
+    prefix = wasm_tempfile.split(".wasm")[0]
+    temp_file_repo.append(prefix + ".w2n.o")
+    temp_file_repo.append(prefix + ".w2n")
 
     ret_code = 0
     try:
@@ -1343,11 +1351,19 @@ if __name__ == "__main__":
                     module_name = re.split('\$', m.group(0).strip())[1]
                     if module_name:
                         # create temporal files
-                        temp_files = create_tmpfiles(module_name)
-                        if not compile_wast_to_wasm(form, temp_files[0], temp_files[1], opts):
+                        nested_wast_tempfile, nested_wasm_tempfile, nested_native_tempfile = create_tmpfiles(module_name)
+                        # could be potientially compiled to object and to native 
+                        # with the future following call test_assert_xxx, 
+                        # add them to temp_file_repo now even if no actual following file, 
+                        # it will be simple ignore during final deletion if not exist
+                        nested_prefix = nested_wasm_tempfile.split(".wasm")[0]
+                        temp_file_repo.append(nested_prefix + ".w2n.o")
+                        temp_file_repo.append(nested_prefix + ".w2n")
+
+                        if not compile_wast_to_wasm(form, nested_wast_tempfile, nested_wasm_tempfile, opts):
                             raise Exception("compile wast to wasm failed")
 
-                        r = compile_wasm_to_object(temp_files[1], temp_files[2], True, opts, r)
+                        r = compile_wasm_to_object(nested_wasm_tempfile, nested_native_tempfile, True, opts, r)
                         try:
                             assert_prompt(r, ['Compile success'], opts.start_timeout, False)
                         except:
@@ -1355,9 +1371,10 @@ if __name__ == "__main__":
                             log("Run wasm2native failed:\n  got: '%s'" % r.buf)
                             ret_code = 1
                             sys.exit(1)
-                        temp_module_table[module_name] = temp_files[1]
-                        r = link_object_to_native(temp_files[2], False, r)
-                        r = run_wasm_with_repl(temp_files[1], temp_files[2], opts, r)
+                        temp_module_table[module_name] = nested_wasm_tempfile
+                        r = link_object_to_native(nested_native_tempfile, False, r)
+                        r = run_wasm_with_repl(nested_wasm_tempfile, nested_native_tempfile, opts, r)
+                        log(str(temp_file_repo))
                 else:
                     if not compile_wast_to_wasm(form, wast_tempfile, wasm_tempfile, opts):
                         raise Exception("compile wast to wasm failed")
@@ -1401,15 +1418,21 @@ if __name__ == "__main__":
 
                     # add new_module copied from the old into temp_file_repo[]
                     temp_file_repo.append(new_module)
+                    # could be potientially compiled to object and to native 
+                    # with the future following call test_assert_xxx, 
+                    # add them to temp_file_repo now even if no actual following file, 
+                    # it will be simple ignore during final deletion if not exist
+                    potential_new_native_obj = os.path.join(tempfile.gettempdir(), name_new + ".w2n.o")
+                    potential_new_native = os.path.join(tempfile.gettempdir(), name_new + ".w2n")
+                    temp_file_repo.append(potential_new_native_obj)
+                    temp_file_repo.append(potential_new_native)
 
-                    new_module_native = os.path.join(tempfile.gettempdir(), name_new + ".w2n")
+                    new_module_native = potential_new_native
                     r = compile_wasm_to_object(new_module, new_module_native, True, opts, r)
                     try:
                         assert_prompt(r, ['Compile success'], opts.start_timeout, True)
                     except:
                         raise Exception("compile wasm to native failed")
-                    # add native module into temp_file_repo[]
-                    temp_file_repo.append(new_module_native)
                 else:
                     # there is no name defined in register cmd
                     raise Exception("can not find module name from the register")
@@ -1421,9 +1444,6 @@ if __name__ == "__main__":
         ret_code = 101
 
         shutil.copyfile(wasm_tempfile, os.path.join(opts.log_dir, os.path.basename(wasm_tempfile)))
-
-    else:
-        ret_code = 0
     finally:
         if not opts.no_cleanup:
             log("Removing tempfiles")
