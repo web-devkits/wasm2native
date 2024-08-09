@@ -19,10 +19,38 @@ export WASM_NDK_ROOT=<path/to/wasm_ndk>
 
 Install [wasi-sdk](https://github.com/WebAssembly/wasi-sdk/tags).
 
-### Compile C/C++ source code to wasm32 sandbox mode
+### Example Usage
 
+The sample C/C++ source code and shell scripts to automatically compile/run it is in this [directory](../samples/hello-world/). Here is the step-by-step guide on how to build different kind of wasm file from :
 
-### Compile C/C++ source code to wasm64 sandbox mode
+#### Compile C/C++ source code to wasm32
 
+To compile C/C++ source code to wasm32, use the `wasi-sdk` toolchain, here is an example command:
 
-### Compile C/C++ source code to wasm64 non-sandbox mode
+```bash
+/opt/wasi-sdk/bin/clang -O3 -I. -msimd128 \
+        -nostdlib -Wl,--no-entry -Wl,--export=__main_void \
+        -Wl,--allow-undefined \
+        -Wno-format \
+        -o out/test_mem32.wasm \
+        main.c
+```
+
+> PS: change the export from `__main_void` to `__main_argc_argv` if the main function take command line arguments.
+
+#### Compile C/C++ source code to wasm64
+
+To compile C/C++ source code to wasm64, use the `wasm_ndk of AndroidWasm` toolchain, here is an example command:
+
+```bash
+${ANDROID_CLANG_TOOLCHAIN}/bin/clang -O3 -I. -msimd128 \
+        --target=wasm64-unknown-unknown -Wno-format \
+        -nostdlib -Wl,--emit-relocs -Wl,--no-entry \
+        -Wl,--export=__main_void -Wl,--allow-undefined \
+        -fvisibility=default -Wno-implicit-function-declaration \
+        --sysroot=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
+        -I${WASM_NDK_ROOT}/include/wasm64 \
+        -I${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include \
+        -o out/test_mem64.wasm \
+        main.c
+```
