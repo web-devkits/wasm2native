@@ -2735,7 +2735,12 @@ create_wasm_get_export_apis_func(const AOTCompData *comp_data,
                     goto fail;
                 }
 
-                bh_assert(aot_exports[i].index >= comp_data->import_func_count);
+                if (aot_exports[i].index < comp_data->import_func_count) {
+                    aot_set_last_error("exporting an import function "
+                                       "is unsupported");
+                    goto fail;
+                }
+
                 func_idx = aot_exports[i].index - comp_data->import_func_count;
 
                 func_type = comp_data->funcs[func_idx]->func_type;

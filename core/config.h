@@ -83,4 +83,13 @@
 #define W2N_ENABLE_SPEC_TEST 0
 #endif
 
+#ifndef W2N_ENABLE_FUZZ_TEST
+#define W2N_ENABLE_FUZZ_TEST 0
+#endif
+
+#ifndef W2N_MEM_ALLOC_MAX_SIZE
+/* In fuzz test, the maximum RAM is ~2.5G */
+#define W2N_MEM_ALLOC_MAX_SIZE (2U * 1024 * 1024 * 1024)
+#endif
+
 #endif /* end of _CONFIG_H_ */

@@ -37,6 +37,13 @@ wasm_runtime_malloc(unsigned int size)
         size = 1;
     }
 
+#if W2N_ENABLE_FUZZ_TEST != 0
+    if (size >= W2N_MEM_ALLOC_MAX_SIZE) {
+        LOG_WARNING("warning: wasm_runtime_malloc with too large size\n");
+        return NULL;
+    }
+#endif
+
     return wasm_runtime_malloc_internal(size);
 }
 
