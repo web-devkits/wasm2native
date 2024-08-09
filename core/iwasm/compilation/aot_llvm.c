@@ -206,7 +206,8 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
                     data_seg_offset = data_seg->base_offset.u.u32;
 
                 if (data_seg_offset > memory_data_size) {
-                    LOG_DEBUG("base_offset(%d) > memory_data_size(%d)",
+                    LOG_DEBUG("base_offset(%" PRIu64
+                              ") > memory_data_size(%" PRIu64 ")",
                               data_seg_offset, memory_data_size);
                     aot_set_last_error(
                         "out of bounds memory access from data segment");
@@ -215,10 +216,10 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
 
                 if (data_seg->data_length
                     > memory_data_size - data_seg_offset) {
-                    LOG_DEBUG(
-                        "base_offset(%d) + length(%d)> memory_data_size(%d)",
-                        data_seg_offset, data_seg->data_length,
-                        memory_data_size);
+                    LOG_DEBUG("base_offset(%" PRIu64
+                              ") + length(%u)> memory_data_size(%" PRIu64 ")",
+                              data_seg_offset, data_seg->data_length,
+                              memory_data_size);
                     aot_set_last_error(
                         "out of bounds memory access from data segment");
                     return false;
