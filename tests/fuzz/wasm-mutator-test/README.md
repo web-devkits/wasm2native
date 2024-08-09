@@ -27,12 +27,17 @@ make -j
 # wasm-tools smith generate some valid wasm file
 # The generated wasm file is in corpus_dir under build
 # N - Number of files to be generated
-./smith_wasm.sh N 
+./smith_wasm.sh N
+```
 
 # running
 ``` bash
 cd build
 ./wasm_mutator_fuzz CORPUS_DIR -rss_limit_mb=3072
 # increase rss_limit_mb if "libFuzzer: out-of-memory" is reported
+# or add `-gnore-ooms=1` flag:
+# ./wasm_mutator_fuzz CORPUS_DIR -rss_limit_mb=3072 -ignore_ooms=1
  
 ```
+
+Refer to [libFuzzer options](https://llvm.org/docs/LibFuzzer.html#options) for more details.

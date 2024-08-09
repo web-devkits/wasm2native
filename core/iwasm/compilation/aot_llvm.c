@@ -1805,10 +1805,11 @@ create_wasm_instance_create_func(const AOTCompData *comp_data,
     /* Call wasm start function if found */
     if (wasm_module->start_function != (uint32)-1) {
         has_post_instantiate_func = true;
-        /* TODO: fix start function can be import function issue, seems haven't
-         * init in this step */
-        bh_assert(wasm_module->start_function
-                  >= wasm_module->import_function_count);
+        if (wasm_module->start_function < wasm_module->import_function_count) {
+            aot_set_last_error("import function as wasm start "
+                               "function is unsupported");
+            return false;
+        }
         func_idx =
             wasm_module->start_function - wasm_module->import_function_count;
         func = comp_ctx->func_ctxes[func_idx]->func;

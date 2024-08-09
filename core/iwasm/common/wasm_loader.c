@@ -4813,9 +4813,6 @@ check_memory_align_equal(uint8 opcode, uint32 align, char *error_buf,
     };
     uint8 expect;
 
-    bh_assert((opcode <= WASM_OP_ATOMIC_WAIT64)
-              || (opcode >= WASM_OP_ATOMIC_I32_LOAD
-                  && opcode <= WASM_OP_ATOMIC_RMW_I64_CMPXCHG32_U));
     if (opcode <= WASM_OP_ATOMIC_WAIT64) {
         expect = wait_notify_aligns[opcode - WASM_OP_ATOMIC_NOTIFY];
     }
@@ -6848,6 +6845,14 @@ wasm_loader_prepare_bytecode(WASMModule *module, WASMFunction *func,
                 uint32 opcode1;
 
                 read_leb_uint32(p, p_end, opcode1);
+
+                if (!(opcode <= WASM_OP_ATOMIC_FENCE
+                      || (opcode >= WASM_OP_ATOMIC_I32_LOAD
+                          && opcode <= WASM_OP_ATOMIC_RMW_I64_CMPXCHG32_U))) {
+                    set_error_buf_v(error_buf, error_buf_size, "%s %02x %02x",
+                                    "unsupported opcode", 0xfe, opcode1);
+                    goto fail;
+                }
 
                 if (opcode1 != WASM_OP_ATOMIC_FENCE) {
                     CHECK_MEMORY();
