@@ -8,3 +8,4 @@ tests/benchmarks/benchmarks-game/wasm32-wasi-benchmark/
 .idea/
 cov-out/
 cmake-build-*/
+workspace

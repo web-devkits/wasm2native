@@ -579,6 +579,41 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
                 initializer =
                     F64_CONST(aot_import_global->global_data_linked.f64);
                 break;
+            case VALUE_TYPE_V128:
+                global_type = V128_TYPE;
+                {
+                    uint64 imm1, imm2;
+                    LLVMValueRef first_long, agg1, second_long, agg2;
+
+                    imm1 = aot_import_global->global_data_linked.v128.i64x2[0];
+                    imm2 = aot_import_global->global_data_linked.v128.i64x2[1];
+
+                    if (!(first_long = I64_CONST(imm1))) {
+                        HANDLE_FAILURE("LLVMConstInt");
+                        return false;
+                    }
+
+                    if (!(agg1 = LLVMBuildInsertElement(
+                              comp_ctx->builder, LLVM_CONST(i64x2_undef),
+                              first_long, I32_ZERO, "agg1"))) {
+                        HANDLE_FAILURE("LLVMBuildInsertElement");
+                        return false;
+                    }
+
+                    if (!(second_long = I64_CONST(imm2))) {
+                        HANDLE_FAILURE("LLVMGetUndef");
+                        return false;
+                    }
+
+                    if (!(agg2 = LLVMBuildInsertElement(comp_ctx->builder, agg1,
+                                                        second_long, I32_ONE,
+                                                        "agg2"))) {
+                        HANDLE_FAILURE("LLVMBuildInsertElement");
+                        return false;
+                    }
+                    initializer = agg2;
+                }
+                break;
             default:
                 bh_assert(0);
                 break;
@@ -672,6 +707,43 @@ create_wasm_globals(const AOTCompData *comp_data, AOTCompContext *comp_ctx)
                               && aot_import_global->type == VALUE_TYPE_F64);
                     initializer =
                         F64_CONST(aot_import_global->global_data_linked.f64);
+                }
+                break;
+            case VALUE_TYPE_V128:
+                global_type = V128_TYPE;
+                bh_assert(aot_global->init_expr.init_expr_type
+                          == INIT_EXPR_TYPE_V128_CONST);
+                {
+                    uint64 imm1, imm2;
+                    LLVMValueRef first_long, agg1, second_long, agg2;
+
+                    imm1 = aot_global->init_expr.u.v128.i64x2[0];
+                    imm2 = aot_global->init_expr.u.v128.i64x2[1];
+
+                    if (!(first_long = I64_CONST(imm1))) {
+                        HANDLE_FAILURE("LLVMConstInt");
+                        return false;
+                    }
+
+                    if (!(agg1 = LLVMBuildInsertElement(
+                              comp_ctx->builder, LLVM_CONST(i64x2_undef),
+                              first_long, I32_ZERO, "agg1"))) {
+                        HANDLE_FAILURE("LLVMBuildInsertElement");
+                        return false;
+                    }
+
+                    if (!(second_long = I64_CONST(imm2))) {
+                        HANDLE_FAILURE("LLVMGetUndef");
+                        return false;
+                    }
+
+                    if (!(agg2 = LLVMBuildInsertElement(comp_ctx->builder, agg1,
+                                                        second_long, I32_ONE,
+                                                        "agg2"))) {
+                        HANDLE_FAILURE("LLVMBuildInsertElement");
+                        return false;
+                    }
+                    initializer = agg2;
                 }
                 break;
             default:
@@ -2687,6 +2759,9 @@ create_wasm_get_export_apis_func(const AOTCompData *comp_data,
                         case VALUE_TYPE_F64:
                             *p++ = 'F';
                             break;
+                        case VALUE_TYPE_V128:
+                            *p++ = 'V';
+                            break;
                         default:
                             bh_assert(0);
                             break;
@@ -2856,6 +2931,12 @@ add_llvm_func(const AOTCompContext *comp_ctx, LLVMModuleRef module,
             func_name = "__aot_malloc";
         else if (!strcmp(func_name, "free"))
             func_name = "__aot_free";
+        else if (!strcmp(func_name, "floor"))
+            func_name = "__aot_floor";
+        else if (!strcmp(func_name, "ceil"))
+            func_name = "__aot_ceil";
+        else if (!strcmp(func_name, "trunc"))
+            func_name = "__aot_trunc";
     }
 
     if (!func_name) {

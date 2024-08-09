@@ -303,6 +303,7 @@ function build_wasm2native()
         && if [ -d build ]; then rm -r build/*; else mkdir build; fi \
         && cd build \
         && cmake .. -DW2N_BUILD_WASM_APPLICATION=1 -DW2N_BUILD_SPEC_TEST=1 \
+                    -DW2N_BUILD_TARGET=${TARGET} \
         && make -j 4
 }
 

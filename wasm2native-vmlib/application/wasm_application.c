@@ -762,7 +762,7 @@ invoke_iiiii_I(void *func_ptr, int32 *argv, int32 *argv_ret)
     PUT_I64_TO_ADDR(argv_ret, ret);
 }
 
-/* For spec cases */
+/* Signatures with float32/float64 argument or result */
 
 static void
 invoke_no_args_f(void *func_ptr, int32 *argv, int32 *argv_ret)
@@ -777,109 +777,6 @@ invoke_no_args_F(void *func_ptr, int32 *argv, int32 *argv_ret)
     float64 (*native_code)() = func_ptr;
     *(float64 *)argv_ret = native_code();
 }
-
-#if W2N_ENABLE_SPEC_TEST != 0
-static void
-invoke_no_args_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int32 *) = func_ptr;
-    argv_ret[0] = native_code((int32 *)(argv_ret + 1));
-}
-
-static void
-invoke_no_args_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int64 *) = func_ptr;
-    argv_ret[0] = native_code((int64 *)(argv_ret + 1));
-}
-
-static void
-invoke_no_args_iF(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(float64 *) = func_ptr;
-    argv_ret[0] = native_code((float64 *)(argv_ret + 1));
-}
-
-static void
-invoke_no_args_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int64 (*native_code)(int32 *) = func_ptr;
-    *(int64 *)argv_ret = native_code((int32 *)(argv_ret + 2));
-}
-
-static void
-invoke_no_args_fF(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    float32 (*native_code)(float64 *) = func_ptr;
-    *(float32 *)argv_ret = native_code((float64 *)(argv_ret + 1));
-}
-
-static void
-invoke_no_args_Fi(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    float64 (*native_code)(int32 *) = func_ptr;
-    *(float64 *)argv_ret = native_code((int32 *)(argv_ret + 2));
-}
-
-static void
-invoke_no_args_Ff(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    float64 (*native_code)(float32 *) = func_ptr;
-    *(float64 *)argv_ret = native_code((float32 *)(argv_ret + 2));
-}
-
-static void
-invoke_no_args_FF(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    float64 (*native_code)(float64 *) = func_ptr;
-    *(float64 *)argv_ret = native_code((float64 *)(argv_ret + 2));
-}
-
-static void
-invoke_no_args_iii(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int32 *, int32 *) = func_ptr;
-    argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int32 *)(argv_ret + 2));
-}
-
-static void
-invoke_no_args_iiI(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int32 *, int64 *) = func_ptr;
-    argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int64 *)(argv_ret + 2));
-}
-
-static void
-invoke_i_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int32, int32 *) = func_ptr;
-    argv_ret[0] = native_code(argv[0], (int32 *)(argv_ret + 1));
-}
-
-static void
-invoke_i_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int32, int64 *) = func_ptr;
-    argv_ret[0] = native_code(argv[0], (int64 *)(argv_ret + 1));
-}
-
-static void
-invoke_i_iiI(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int32 (*native_code)(int32, int32 *, int64 *) = func_ptr;
-    argv_ret[0] =
-        native_code(argv[0], (int32 *)(argv_ret + 1), (int64 *)(argv_ret + 2));
-}
-
-static void
-invoke_IIi_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
-{
-    int64 (*native_code)(int64, int64, int32, int32 *) = func_ptr;
-    *(int64 *)argv_ret =
-        native_code(*(int64 *)argv, *(int64 *)(argv + 2), *(int64 *)(argv + 4),
-                    (int32 *)(argv_ret + 2));
-}
-#endif /* end of W2N_ENABLE_SPEC_TEST != 0 */
 
 static void
 invoke_i_f(void *func_ptr, int32 *argv, int32 *argv_ret)
@@ -1108,6 +1005,9 @@ invoke_FFF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
                                        *(float64 *)(argv + 4));
 }
 
+/* For wasm spec cases */
+
+#if W2N_ENABLE_SPEC_TEST != 0
 static void
 invoke_ffff_f(void *func_ptr, int32 *argv, int32 *argv_ret)
 {
@@ -1173,6 +1073,424 @@ invoke_FFFFFFFF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
         *(float64 *)(argv + 12), *(float64 *)(argv + 14));
 }
 
+static void
+invoke_no_args_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32 *) = func_ptr;
+    argv_ret[0] = native_code((int32 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int64 *) = func_ptr;
+    argv_ret[0] = native_code((int64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_iF(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(float64 *) = func_ptr;
+    argv_ret[0] = native_code((float64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(int32 *) = func_ptr;
+    *(int64 *)argv_ret = native_code((int32 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_fF(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(float64 *) = func_ptr;
+    *(float32 *)argv_ret = native_code((float64 *)(argv_ret + 1));
+}
+
+static void
+invoke_no_args_Fi(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(int32 *) = func_ptr;
+    *(float64 *)argv_ret = native_code((int32 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_Ff(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float32 *) = func_ptr;
+    *(float64 *)argv_ret = native_code((float32 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_FF(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(float64 *) = func_ptr;
+    *(float64 *)argv_ret = native_code((float64 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_iii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32 *, int32 *) = func_ptr;
+    argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int32 *)(argv_ret + 2));
+}
+
+static void
+invoke_no_args_iiI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32 *, int64 *) = func_ptr;
+    argv_ret[0] = native_code((int32 *)(argv_ret + 1), (int64 *)(argv_ret + 2));
+}
+
+static void
+invoke_i_ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, int32 *) = func_ptr;
+    argv_ret[0] = native_code(argv[0], (int32 *)(argv_ret + 1));
+}
+
+static void
+invoke_i_iI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, int64 *) = func_ptr;
+    argv_ret[0] = native_code(argv[0], (int64 *)(argv_ret + 1));
+}
+
+static void
+invoke_i_iiI(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(int32, int32 *, int64 *) = func_ptr;
+    argv_ret[0] =
+        native_code(argv[0], (int32 *)(argv_ret + 1), (int64 *)(argv_ret + 2));
+}
+
+static void
+invoke_IIi_Ii(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(int64, int64, int32, int32 *) = func_ptr;
+    *(int64 *)argv_ret =
+        native_code(*(int64 *)argv, *(int64 *)(argv + 2), *(int64 *)(argv + 4),
+                    (int32 *)(argv_ret + 2));
+}
+
+#if UINTPTR_MAX == UINT64_MAX
+#ifdef v128
+#undef v128
+#endif
+
+#if (defined(_WIN32) || defined(_WIN32_))
+typedef union __declspec(intrin_type) __declspec(align(8)) v128 {
+    __int8 m128i_i8[16];
+    __int16 m128i_i16[8];
+    __int32 m128i_i32[4];
+    __int64 m128i_i64[2];
+    unsigned __int8 m128i_u8[16];
+    unsigned __int16 m128i_u16[8];
+    unsigned __int32 m128i_u32[4];
+    unsigned __int64 m128i_u64[2];
+} v128;
+#define V128_DEFINED
+#elif defined(BUILD_TARGET_X86_64) || defined(BUILD_TARGET_AMD_64) \
+    || defined(BUILD_TARGET_RISCV64_LP64D)                         \
+    || defined(BUILD_TARGET_RISCV64_LP64)
+typedef long long v128
+    __attribute__((__vector_size__(16), __may_alias__, __aligned__(1)));
+#define V128_DEFINED
+#elif defined(BUILD_TARGET_AARCH64)
+#include <arm_neon.h>
+typedef uint32x4_t __m128i;
+#define v128 __m128i
+#define V128_DEFINED
+#endif
+#endif /* end of UINTPTR_MAX == UINT64_MAX */
+
+#if defined(V128_DEFINED)
+static void
+invoke_no_args_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(void) = func_ptr;
+    *(v128 *)argv_ret = native_code();
+}
+
+static void
+invoke_i_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int32) = func_ptr;
+    *(v128 *)argv_ret = native_code(argv[0]);
+}
+
+static void
+invoke_I_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(int64 *)argv);
+}
+
+static void
+invoke_f_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(float32) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(float32 *)argv);
+}
+
+static void
+invoke_F_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(float64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(float64 *)argv);
+}
+
+static void
+invoke_V_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(v128) = func_ptr;
+    argv_ret[0] = native_code(*(v128 *)argv);
+}
+
+static void
+invoke_V_I(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(v128) = func_ptr;
+    *(int64 *)argv_ret = native_code(*(v128 *)argv);
+}
+
+static void
+invoke_V_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(v128) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(v128 *)argv);
+}
+
+static void
+invoke_V_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(v128) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(v128 *)argv);
+}
+
+static void
+invoke_V_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv);
+}
+
+static void
+invoke_iV_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(int32, v128) = func_ptr;
+    native_code(argv[0], *(v128 *)(argv + 1));
+}
+
+static void
+invoke_ii_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int32, int32) = func_ptr;
+    *(v128 *)argv_ret = native_code(argv[0], argv[1]);
+}
+
+static void
+invoke_iV_I(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(int32, v128) = func_ptr;
+    *(int64 *)argv_ret = native_code(argv[0], *(v128 *)(argv + 1));
+}
+
+static void
+invoke_iV_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int32, v128) = func_ptr;
+    *(v128 *)argv_ret = native_code(argv[0], *(v128 *)(argv + 1));
+}
+
+static void
+invoke_ff_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(float32, float32) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(float32 *)argv, *(float32 *)(argv + 1));
+}
+
+static void
+invoke_II_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int64, int64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(int64 *)argv, *(int64 *)(argv + 2));
+}
+
+static void
+invoke_FF_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(float64, float64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(float64 *)argv, *(float64 *)(argv + 2));
+}
+
+static void
+invoke_Vi_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(v128, int32) = func_ptr;
+    *(int32 *)argv_ret = native_code(*(v128 *)argv, argv[4]);
+}
+
+static void
+invoke_Vi_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, int32) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, argv[4]);
+}
+
+static void
+invoke_VI_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(v128, int64) = func_ptr;
+    argv_ret[0] = native_code(*(v128 *)argv, *(int64 *)(argv + 4));
+}
+
+static void
+invoke_VI_I(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int64 (*native_code)(v128, int64) = func_ptr;
+    *(int64 *)argv_ret = native_code(*(v128 *)argv, *(int64 *)(argv + 4));
+}
+
+static void
+invoke_VI_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, int64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, *(int64 *)(argv + 4));
+}
+
+static void
+invoke_Vf_f(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float32 (*native_code)(v128, float32) = func_ptr;
+    *(float32 *)argv_ret = native_code(*(v128 *)argv, *(float32 *)(argv + 4));
+}
+
+static void
+invoke_Vf_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, float32) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, *(float32 *)(argv + 4));
+}
+
+static void
+invoke_VF_F(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    float64 (*native_code)(v128, float64) = func_ptr;
+    *(float64 *)argv_ret = native_code(*(v128 *)argv, *(float64 *)(argv + 4));
+}
+
+static void
+invoke_VF_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, float64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, *(float64 *)(argv + 4));
+}
+
+static void
+invoke_VV_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(v128, v128) = func_ptr;
+    *(int32 *)argv_ret = native_code(*(v128 *)argv, *(v128 *)(argv + 4));
+}
+
+static void
+invoke_VV_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, v128) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, *(v128 *)(argv + 4));
+}
+
+static void
+invoke_iii_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int32, int32, int32) = func_ptr;
+    *(v128 *)argv_ret = native_code(argv[0], argv[1], argv[2]);
+}
+
+static void
+invoke_ViV_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, int32, v128) = func_ptr;
+    *(v128 *)argv_ret =
+        native_code(*(v128 *)argv, argv[4], *(v128 *)(argv + 5));
+}
+
+static void
+invoke_VVV_i(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    int32 (*native_code)(v128, v128, v128) = func_ptr;
+    argv_ret[0] =
+        native_code(*(v128 *)argv, *(v128 *)(argv + 4), *(v128 *)(argv + 8));
+}
+
+static void
+invoke_VVV_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, v128, v128) = func_ptr;
+    *(v128 *)argv_ret =
+        native_code(*(v128 *)argv, *(v128 *)(argv + 4), *(v128 *)(argv + 8));
+}
+
+static void
+invoke_iiii_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int32, int32, int32, int32) = func_ptr;
+    *(v128 *)argv_ret = native_code(argv[0], argv[1], argv[2], argv[3]);
+}
+
+static void
+invoke_IIII_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(int64, int64, int64, int64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(int64 *)argv, *(int64 *)(argv + 2),
+                                    *(int64 *)(argv + 4), *(int64 *)(argv + 6));
+}
+
+static void
+invoke_FFFF_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(float64, float64, float64, float64) = func_ptr;
+    *(v128 *)argv_ret =
+        native_code(*(float64 *)argv, *(float64 *)(argv + 2),
+                    *(float64 *)(argv + 4), *(float64 *)(argv + 6));
+}
+
+static void
+invoke_ViVi_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, int32, v128, int32) = func_ptr;
+    *(v128 *)argv_ret =
+        native_code(*(v128 *)argv, argv[4], *(v128 *)(argv + 5), argv[9]);
+}
+
+static void
+invoke_VIVI_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, int64, v128, int64) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, *(int64 *)(argv + 4),
+                                    *(v128 *)(argv + 6), *(int64 *)(argv + 10));
+}
+
+static void
+invoke_VVVV_v(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    void (*native_code)(v128, v128, v128, v128) = func_ptr;
+    native_code(*(v128 *)argv, *(v128 *)(argv + 4), *(v128 *)(argv + 8),
+                *(v128 *)(argv + 12));
+}
+
+static void
+invoke_VVVV_V(void *func_ptr, int32 *argv, int32 *argv_ret)
+{
+    v128 (*native_code)(v128, v128, v128, v128) = func_ptr;
+    *(v128 *)argv_ret = native_code(*(v128 *)argv, *(v128 *)(argv + 4),
+                                    *(v128 *)(argv + 8), *(v128 *)(argv + 12));
+}
+#endif /* end of V128_DEFINED */
+#endif /* end of W2N_ENABLE_SPEC_TEST != 0 */
+
 typedef struct QuickAOTEntry {
     const char *signature;
     void *func_ptr;
@@ -1220,27 +1538,7 @@ static QuickAOTEntry quick_aot_entries[] = {
 
     { "(iiiii)", invoke_iiiii_v }, { "(iiiii)i", invoke_iiiii_i }, { "(iiiii)I", invoke_iiiii_I },
 
-#if W2N_ENABLE_SPEC_TEST != 0
-    { "()ii", invoke_no_args_ii },
-    { "()iI", invoke_no_args_iI },
-    { "()iF", invoke_no_args_iF },
-    { "()Ii", invoke_no_args_Ii },
-    { "()fF", invoke_no_args_fF },
-    { "()Fi", invoke_no_args_Fi },
-    { "()Ff", invoke_no_args_Ff },
-    { "()FF", invoke_no_args_FF },
-    { "()iii", invoke_no_args_iii },
-    { "()iiI", invoke_no_args_iiI },
-    { "(i)ii", invoke_i_ii },
-    { "(i)iI", invoke_i_iI },
-    { "(i)iiI", invoke_i_iiI },
-    { "(i)iiI", invoke_i_iiI },
-    { "(IIi)Ii", invoke_IIi_Ii },
-    /* TODO */
-#if 0
-    { "(iIffiFfiiifFFFiif)FfiiiIfiifFFifiF", invoke_iIffiFfiiifFFFiif_FfiiiIfiifFFifiF },
-#endif
-#endif
+    /* Signatures with float32/float64 argument or result */
 
     { "()f", invoke_no_args_f },
     { "()F", invoke_no_args_F },
@@ -1275,6 +1573,8 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "(FFi)F", invoke_FFi_F },
     { "(FFF)i", invoke_FFF_i },
     { "(FFF)F", invoke_FFF_F },
+
+#if W2N_ENABLE_SPEC_TEST != 0
     { "(ffff)f", invoke_ffff_f },
     { "(FFFF)F", invoke_FFFF_F },
     { "(IfFii)", invoke_IfFii_v },
@@ -1282,6 +1582,69 @@ static QuickAOTEntry quick_aot_entries[] = {
     { "(IfFii)F", invoke_IfFii_F },
     { "(fiIiFi)F", invoke_fiIiFi_F },
     { "(FFFFFFFF)F", invoke_FFFFFFFF_F },
+
+    { "()ii", invoke_no_args_ii },
+    { "()iI", invoke_no_args_iI },
+    { "()iF", invoke_no_args_iF },
+    { "()Ii", invoke_no_args_Ii },
+    { "()fF", invoke_no_args_fF },
+    { "()Fi", invoke_no_args_Fi },
+    { "()Ff", invoke_no_args_Ff },
+    { "()FF", invoke_no_args_FF },
+    { "()iii", invoke_no_args_iii },
+    { "()iiI", invoke_no_args_iiI },
+    { "(i)ii", invoke_i_ii },
+    { "(i)iI", invoke_i_iI },
+    { "(i)iiI", invoke_i_iiI },
+    { "(i)iiI", invoke_i_iiI },
+    { "(IIi)Ii", invoke_IIi_Ii },
+    /* TODO */
+#if 0
+    { "(iIffiFfiiifFFFiif)FfiiiIfiifFFifiF", invoke_iIffiFfiiifFFFiif_FfiiiIfiifFFifiF },
+#endif
+
+#if defined(V128_DEFINED)
+    { "()V", invoke_no_args_V },
+    { "(i)V", invoke_i_V },
+    { "(I)V", invoke_I_V },
+    { "(f)V", invoke_f_V },
+    { "(F)V", invoke_F_V },
+    { "(V)i", invoke_V_i },
+    { "(V)I", invoke_V_I },
+    { "(V)f", invoke_V_f },
+    { "(V)F", invoke_V_F },
+    { "(V)V", invoke_V_V },
+    { "(iV)", invoke_iV_v },
+    { "(ii)V", invoke_ii_V },
+    { "(iV)I", invoke_iV_I },
+    { "(iV)V", invoke_iV_V },
+    { "(II)V", invoke_II_V },
+    { "(ff)V", invoke_ff_V },
+    { "(FF)V", invoke_FF_V },
+    { "(Vi)i", invoke_Vi_i },
+    { "(Vi)V", invoke_Vi_V },
+    { "(VI)i", invoke_VI_i },
+    { "(VI)I", invoke_VI_I },
+    { "(VI)V", invoke_VI_V },
+    { "(Vf)f", invoke_Vf_f },
+    { "(Vf)V", invoke_Vf_V },
+    { "(VF)F", invoke_VF_F },
+    { "(VF)V", invoke_VF_V },
+    { "(VV)i", invoke_VV_i },
+    { "(VV)V", invoke_VV_V },
+    { "(iii)V", invoke_iii_V },
+    { "(ViV)V", invoke_ViV_V },
+    { "(VVV)i", invoke_VVV_i },
+    { "(VVV)V", invoke_VVV_V },
+    { "(iiii)V", invoke_iiii_V },
+    { "(IIII)V", invoke_IIII_V },
+    { "(FFFF)V", invoke_FFFF_V },
+    { "(ViVi)V", invoke_ViVi_V },
+    { "(VIVI)V", invoke_VIVI_V },
+    { "(VVVV)", invoke_VVVV_v },
+    { "(VVVV)V", invoke_VVVV_V },
+#endif /* end of V128_DEFINED */
+#endif /* end of W2N_ENABLE_SPEC_TEST != 0 */
 };
 /* clang-format on */
 
@@ -1772,7 +2135,7 @@ execute_func(const char *name, int32 argc, char *argv[])
                 os_printf("%.7g:f64", u.val);
                 break;
             }
-            case 'v':
+            case 'V':
             {
                 uint64 *v = (uint64 *)(argv1 + k);
                 os_printf("<0x%016" PRIx64 " 0x%016" PRIx64 ">:v128", *v,

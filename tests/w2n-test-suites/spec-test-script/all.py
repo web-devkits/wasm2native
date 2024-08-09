@@ -9,6 +9,7 @@ import multiprocessing as mp
 import platform
 import pathlib
 import subprocess
+import os
 import sys
 import time
 
@@ -60,7 +61,7 @@ def ignore_the_case(
     if case_name in ["comments", "inline-module", "names"]:
         return True
 
-    if case_name in ["imports", "linking", "simd_linking"]:
+    if case_name in ["imports", "linking"]:
         return True
 
     # wasm2native don't support some opcodes, 
@@ -422,7 +423,8 @@ def main():
         if options.parl_flag:
             # several cases might share the same workspace/tempfile at the same time
             # so, disable it while running parallelly
-            options.clean_up_flag = False
+            # TODO: disable if in the future enabled multi-module and multi-memory
+            # options.clean_up_flag = False
             options.verbose_flag = False
 
         start = time.time_ns()
