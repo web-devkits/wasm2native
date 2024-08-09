@@ -241,7 +241,8 @@ aot_compile_func(AOTCompContext *comp_ctx, uint32 func_index)
                     frame_ip--;
                     read_leb_int32(frame_ip, frame_ip_end, type_index);
                     /* type index was checked in wasm loader */
-                    bh_assert(type_index < comp_ctx->comp_data->func_type_count);
+                    bh_assert(type_index
+                              < comp_ctx->comp_data->func_type_count);
                     func_type = comp_ctx->comp_data->func_types[type_index];
                     param_count = func_type->param_count;
                     param_types = func_type->types;
