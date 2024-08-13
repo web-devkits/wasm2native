@@ -43,6 +43,7 @@ gcc -O3 -I. -o out/test main.c -Wno-format
 echo "Build test_mem32.wasm with wasi-sdk .."
 /opt/wasi-sdk/bin/clang -O3 -I. -msimd128 \
         -nostdlib -Wl,--no-entry -Wl,--export=__main_void \
+        -Wl,--export=add \
         -Wl,--allow-undefined \
         -Wno-format \
         -o out/test_mem32.wasm \
@@ -51,7 +52,7 @@ echo "Build test_mem32.wasm with wasi-sdk .."
 echo "Build test_mem64.wasm with Android clang toolchain .."
 ${ANDROID_CLANG_TOOLCHAIN}/bin/clang -O3 -I. -msimd128 \
         --target=wasm64-unknown-unknown -Wno-format \
-        -nostdlib -Wl,--emit-relocs -Wl,--no-entry \
+        -nostdlib -Wl,--emit-relocs -Wl,--no-entry -Wl,--export=add \
         -Wl,--export=__main_void -Wl,--allow-undefined \
         -fvisibility=default -Wno-implicit-function-declaration \
         --sysroot=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
