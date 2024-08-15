@@ -1,6 +1,6 @@
 # Embed compiled native object file in C/C++
 
-From the previous documentation on how to [compile Wasm to native](./compile_wasm_app_to_native.md), we have seen how to compile the wasm app to a native object file and link it with the auxiliary library to the native executable, both `sandbox` mode and `no-sandbox` mode. In this section, we will explore the difference between `sandbox` and `no-sandbox` modes in more detail.
+From the previous documentation on how to [compile Wasm to native](./compile_wasm_app_to_native.md), we have seen how to compile the wasm app to a native object file and link it with the auxiliary library to the native binary, both `sandbox` mode and `no-sandbox` mode. In this section, we will explore the difference between `sandbox` and `no-sandbox` modes in more detail.
 
 ## Wasm app is compiled to native in sandbox mode
 
@@ -12,7 +12,7 @@ And the native binary object needs to be further linked with `libc-builtin.c` to
 
 1. Link with source files like `wasm_application.c` and `main.c` then an **executable file** can be generated, and the `--invoke func` and `--repl` command line options are supported to call a function. If these two options are not used, the default is to execute the main function of the wasm app, if it exists.
 
-2. If `wasm_application.c` and `main.c` are not linked, then normally a **static library** or a **dynamic library** is generated, and when using this library, normally in the other source code that the native object file linked with, export APIs defined in `w2n_export.h`,
+2. If `wasm_application.c` and `main.c` are not linked, then normally a **static library** or a **dynamic library** is generated, and when using this library, normally in the other source code that the native object file linked with, export APIs defined in `w2n_export.h`.
 
 ## Wasm app is compiled to native in no-sandbox mode
 

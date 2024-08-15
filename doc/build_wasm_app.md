@@ -58,6 +58,6 @@ ${ANDROID_CLANG_TOOLCHAIN}/bin/clang -O3 -I. -msimd128 \
         main.c
 ```
 
-> Note: by adding the compile flag `-Wl,--emit-relocs`, the wasm64 file will contain relocation information, which is required for the `wasm2native` compiler to compile the wasm64 file to a native object file in no-sandbox mode(the wasm64 file will also compatible with sandbox mode). But if you only want to compile the wasm64 file to a native object file in sandbox mode, you can remove this flag.
+> Note: by adding the compile flag `-Wl,--emit-relocs`, the wasm64 file will contain relocation information, which is required for the `wasm2native` compiler to compile the wasm64 file to a native object file in no-sandbox mode(the wasm64 file will also be compatible with sandbox mode). But if you only want to compile the wasm64 file to a native object file in sandbox mode, you can remove this flag.
 
-After that, you can use the `wasm2native` compiler to compile the wasm32 file to a native object file in **both sandbox mode and no-sandbox mode**. Details can refer to [compile wasm applications to native binary](./compile_wasm_app_to_native.md).
+After that, you can use the `wasm2native` compiler to compile the wasm64 file to a native object file in **both sandbox mode and no-sandbox mode**. Details can refer to [compile wasm applications to native binary](./compile_wasm_app_to_native.md).

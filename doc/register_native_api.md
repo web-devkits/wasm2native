@@ -31,12 +31,6 @@ Each letter in the "()" represents a parameter type, and the one following after
 - '**I**': i64
 - '**f**': f32
 - '**F**': f64
-- '**r**': externref (has to be the value of a `uintptr_t` variable), or all kinds of GC reference types when the GC feature is enabled
-- '**\***': the parameter is a buffer address in the WASM application
-- '**~**': the parameter is the byte length of the WASM buffer as referred to by the preceding argument "\*". It must follow after '*', otherwise, registration will fail
-- '**$**': the parameter is a string in the WASM application
-
-The signature can defined as NULL, and then all function parameters are assumed as i32 data type.
 
 ## Provide the implementation in the auxiliary library
 

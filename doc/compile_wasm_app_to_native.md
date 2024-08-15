@@ -4,9 +4,9 @@ Build the [wasm2native compiler](../wasm2native-compiler/README.md) and [wasm2na
 
 ### Example usage
 
-After compiling the C/C++ source code to wasm32/wasm64 file(more details please follow the steps in [build_wasm_app.md](./build_wasm_app.md)), you can use the `wasm2native` to compile the Wasm file to a native object file in sandbox/no-sandbox mode, and then use a linker like gcc/clang to link that object file with `vmlib` to generate the final product, it could be an executable file, shared library, or static library.
+After compiling the C/C++ source code to wasm32/wasm64 file(more details please follow the steps in [build_wasm_app.md](./build_wasm_app.md)), you can use the `wasm2native` to compile the Wasm file to a native object file in sandbox/no-sandbox mode, and then use a linker like gcc/clang to link that object file with auxiliary library(`libvmlib.a` or `libnosandbox.a`) to generate the final product, it could be an executable file, shared library, or static library.
 
-#### Compile wasm32/wasm64 code to the native object file
+#### Compile wasm32/wasm64 file to the native object file
 
 You can compile the wasm64 to either sandbox mode or non-sandbox mode, but wasm32 only supports sandbox mode, and wasm64 no-sandbox mode need to add the compile flag `-Wl,--emit-relocs` when generating wasm64 file.
 
@@ -20,7 +20,7 @@ You can compile the wasm64 to either sandbox mode or non-sandbox mode, but wasm3
 
 #### Link the object file with the auxiliary library to generate the final product
 
-Like normal object file, you can like it with the auxiliary library to generate the final product. It could either be
+Like normal object file, you can link it with the auxiliary library to generate the final product. It could either be
 
 - an [executable file](#binary-executable)
 - [shared library](#shared-library)
@@ -30,7 +30,7 @@ Use the executable file is straightforward, you can execute it like a normal exe
 
 ##### Binary executable
 
-There are two auxiliary libraries, `vmlib` and `nosandbox`, used for `sandbox` and `no-sandbox` mode object file. You can either link with `vmlib` to generate the executable file in sandbox mode or `nosandbox` to generate the executable file in non-sandbox mode.
+There are two auxiliary libraries, `libvmlib.a` and `libnosandbox.a`, used for `sandbox` mode and `no-sandbox` mode object file respectively. You can either link with `libvmlib.a` to generate the executable file in sandbox mode or `libnosandbox.a` to generate the executable file in non-sandbox mode.
 
 ```bash
 # link object file and vmlib library to generate the executable file in sandbox mode
@@ -40,7 +40,7 @@ gcc -O3 -o test_mem64 test_mem64.o -L ../build -lvmlib
 gcc -O3 -o test_mem64_nosandbox test_mem64_nosandbox.o -L ../build -lnosandbox -lm
 ```
 
-For more detail about the difference between `sandbox` and `nosandbox`, it can be found in [embed_compiled_native.md](./embed_compiled_native.md).
+For more detail about the difference between two modes `sandbox` and `nosandbox`, please refer to [embed_compiled_native.md](./embed_compiled_native.md).
 
 After linking, you can execute the generated executable file like normal executable, whether in sandbox mode or non-sandbox mode.
 
@@ -51,7 +51,7 @@ After linking, you can execute the generated executable file like normal executa
 
 Additionally, in **sandbox** mode, you can
 
-- pass some command line to specify a function name of the module to run rather than main. For example, in this case, you can run the function `add` in the module `test_mem32` by
+- pass some command line arguments to specify a function name of the module to run rather than main. For example, in this case, you can run the function `add` in the module `test_mem32` by
 
   ```bash
   # the result will be 0x5:i32
@@ -80,14 +80,14 @@ Like normal object file, you can link it with the auxiliary library to generate 
 
 ```bash
 # link object file and vmlib library to generate the shared library
-gcc -shared -o libnewlibrary.so test_mem32.o -L../build -lvmlib
+gcc -fPIC -shared -o libnewlibrary.so test_mem32.o -L../build -lvmlib
 # link object file and nosandbox library to generate the shared library
-gcc -shared -o libtestsandbox.so test_mem32.o -L../build -lvmlib
+gcc -fPIC -shared -o libtestsandbox.so test_mem32.o -L../build -lvmlib
 ```
 
 ##### Static library
 
-It's more complex for shared library, you need to first extract the existing auxiliary library to object files, Then you can link the object file with them to generate the static library.
+It's more complex for static library, you need to first extract the existing auxiliary library to object files, then you can link the object file with them to generate the static library.
 
 ```bash
 # First, extract the object files from the existing static library
