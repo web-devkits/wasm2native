@@ -6,6 +6,8 @@ Build the [wasm2native compiler](../wasm2native-compiler/README.md) and [wasm2na
 
 After compiling the C/C++ source code to wasm32/wasm64 file(more details please follow the steps in [build_wasm_app.md](./build_wasm_app.md)), you can use the `wasm2native` to compile the Wasm file to a native object file in sandbox/no-sandbox mode, and then use a linker like gcc/clang to link that object file with auxiliary library(`libvmlib.a` or `libnosandbox.a`) to generate the final product, it could be an executable file, shared library, or static library.
 
+You can find the sample C/C++ source code and shell scripts to automatically compile/run it in this [directory](../samples/compiled-embed-native/).
+
 #### Compile wasm32/wasm64 file to the native object file
 
 You can compile the wasm64 to either sandbox mode or non-sandbox mode, but wasm32 only supports sandbox mode, and wasm64 no-sandbox mode need to add the compile flag `-Wl,--emit-relocs` when generating wasm64 file.
@@ -76,26 +78,39 @@ For more detail on those two usages you can refer to help message by running the
 
 ##### Shared library
 
-Like normal object file, you can link it with the auxiliary library to generate the shared library.
+Like normal object file, you can link it with the auxiliary library `libvmlib` or `libnosandbox` to generate the shared library.
+
+> PS: when compiling auxiliary libraries, don't add CMake flag `-DW2N_BUILD_WASM_APPLICATION=1` like in other examples, this option will exclude the main.c and wasm_application.c from the `vmlib` library build source list.
 
 ```bash
-# link object file and vmlib library to generate the shared library
-gcc -fPIC -shared -o libnewlibrary.so test_mem32.o -L../build -lvmlib
-# link object file and nosandbox library to generate the shared library
-gcc -fPIC -shared -o libtestsandbox.so test_mem32.o -L../build -lvmlib
+# link object file and vmlib library to generate the shared library for sandbox mode
+gcc -fPIC -shared -o libsharedsandbox.so main.o -L../build/ -lvmlib
+# link object file and nosandbox library to generate the shared library for no-sandbox mode
+gcc -fPIC -shared -o libsharednosandbox.so nomain_nosandbox.o -L ../build -lnosandbox -lm
 ```
 
 ##### Static library
 
 It's more complex for static library, you need to first extract the existing auxiliary library to object files, then you can link the object file with them to generate the static library.
 
+First, extract the object files from the existing static library.
+
 ```bash
-# First, extract the object files from the existing static library
-mkdir sandbox_objs
-ar x ../build/libvmlib.a --output=sandbox_objs
-# Then, create a new static library including your object file
-ar rcs libtestsandbox.a test_mem32 sandbox_objs/*.o
-# similarly for the no-sandbox mode
-ar x ../build/libnosandbox.a
-ar rcs libtestnosandbox.a test_mem32.o libc64_nosandbox_wrapper.c.o
+mkdir extracted_objs
+ar x ../build/libvmlib.a --output=extracted_objs
+```
+
+Then, create a new static library including your object file, and extracted object files.
+
+For sandbox mode, exclude main.c and wasm_application.c object files.
+
+```bash
+ar rcs libstaticsandbox.a main.o $(ls extracted_objs/*.o | grep -vE 'main\.c\.o|wasm_application\.c\.o')
+```
+
+For the no-sandbox mode, it's simpler, you can link the object file with nosandbox object directly
+
+```bash
+ar x ../build/libnosandbox.a --output=extracted_objs
+ar rcs libstaticnosandbox.a nomain_nosandbox.o extracted_objs/libc64_nosandbox_wrapper.c.o
 ```
