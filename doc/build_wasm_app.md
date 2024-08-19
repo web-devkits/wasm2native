@@ -21,7 +21,7 @@ Install [wasi-sdk](https://github.com/WebAssembly/wasi-sdk/tags).
 
 ### Example Usage
 
-The sample C/C++ source code and shell scripts to automatically compile/run it are in this [directory](../samples/hello-world/). Here is the step-by-step guide on how to build different kind of wasm file from C/C++ source code:
+The sample C/C++ source code and shell scripts to automatically compile/run it are in this [directory](../samples/hello-world/). Here is the step-by-step guide on how to build different kinds of wasm files from C/C++ source code:
 
 #### Compile C/C++ source code to wasm32
 
@@ -39,7 +39,7 @@ To compile C/C++ source code to wasm32, use the `wasi-sdk` toolchain, here is an
 
 > PS: change the export from `__main_void` to `__main_argc_argv` if the main function take command line arguments.
 
-After that, you can use the `wasm2native` compiler to compile the wasm32 file to a native object file in **sandbox mode**(no-sandbox mode is not supported yet for wasm32). Details can refer to [compile wasm applications to native binary](./compile_wasm_app_to_native.md).
+After that, you can use the `wasm2native` compiler to compile the wasm32 file to a native object file in **sandbox mode**(no-sandbox mode is not yet supported for wasm32). Details can refer to [compile wasm applications to native binary](./compile_wasm_app_to_native.md).
 
 #### Compile C/C++ source code to wasm64
 
