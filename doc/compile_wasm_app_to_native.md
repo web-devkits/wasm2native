@@ -28,7 +28,7 @@ Like a normal object file, you can link it with the auxiliary library to generat
 
 Using the executable file is straightforward, you can execute it like a normal executable file, whether in sandbox mode or non-sandbox mode, for shared library and static library. It's more complex for the shared library or static library. You can find more details on using them in [this section](./embed_compiled_native.md).
 
-You can find the sample demonstrating how you may use the shared library and static library in this [directory](../samples/compiled-embed-native/)
+You can find the sample demonstrating how you may use the shared library and static library in this [directory](../samples/embed-compiled-native/)
 
 ##### Binary executable
 

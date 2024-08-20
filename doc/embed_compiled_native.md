@@ -1,6 +1,6 @@
 # Embed compiled native object file in C/C++
 
-From the previous documentation on how to [compile Wasm to native](./compile_wasm_app_to_native.md), we have seen how to compile the wasm app to a native object file and link it with the auxiliary library to the native binary, both `sandbox` mode and `no-sandbox` mode, to produce the final product(executable file, shared library, or static library). In this section, we will explore the difference between `sandbox` and `no-sandbox` modes in more details and how you may use the shared library and static library(complete sample code can be found in this [directory](../samples/compiled-embed-native/))
+From the previous documentation on how to [compile Wasm to native](./compile_wasm_app_to_native.md), we have seen how to compile the wasm app to a native object file and link it with the auxiliary library to the native binary, both `sandbox` mode and `no-sandbox` mode, to produce the final product(executable file, shared library, or static library). In this section, we will explore the difference between `sandbox` and `no-sandbox` modes in more details and how you may use the shared library and static library(complete sample code can be found in this [directory](../samples/embed-compiled-native/))
 
 ## Wasm app is compiled to native in sandbox mode
 
