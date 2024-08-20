@@ -102,7 +102,7 @@ typedef char *_va_list;
         }                              \
     } while (0)
 
-void
+static void
 print_err(out_func_t out, void *ctx)
 {
     out('E', ctx);
@@ -110,7 +110,7 @@ print_err(out_func_t out, void *ctx)
     out('R', ctx);
 }
 
-bool
+static bool
 _vprintf_wa(out_func_t out, void *ctx, const char *fmt, _va_list ap)
 {
     int might_format = 0; /* 1 if encountered a '%' */
