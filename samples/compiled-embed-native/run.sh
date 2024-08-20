@@ -26,7 +26,3 @@ LD_LIBRARY_PATH=$PWD ./sandbox_with_sharedlib
 echo ""
 echo "Run nosandbox main with nosandbox shared library(wasm memory64 inside)" 
 LD_LIBRARY_PATH=$PWD ./nosandbox_with_sharedlib
-
-
-
-

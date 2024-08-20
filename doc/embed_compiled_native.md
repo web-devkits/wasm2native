@@ -1,6 +1,6 @@
 # Embed compiled native object file in C/C++
 
-From the previous documentation on how to [compile Wasm to native](./compile_wasm_app_to_native.md), we have seen how to compile the wasm app to a native object file and link it with the auxiliary library to the native binary, both `sandbox` mode and `no-sandbox` mode, to produce the final product(executable file, shared library, or static library). In this section, we will explore the difference between `sandbox` and `no-sandbox` modes in more detail and how you may use the shared library and static library(complete sample code can be found in this [directory](../samples/compiled-embed-native/))
+From the previous documentation on how to [compile Wasm to native](./compile_wasm_app_to_native.md), we have seen how to compile the wasm app to a native object file and link it with the auxiliary library to the native binary, both `sandbox` mode and `no-sandbox` mode, to produce the final product(executable file, shared library, or static library). In this section, we will explore the difference between `sandbox` and `no-sandbox` modes in more details and how you may use the shared library and static library(complete sample code can be found in this [directory](../samples/compiled-embed-native/))
 
 ## Wasm app is compiled to native in sandbox mode
 
@@ -8,7 +8,7 @@ The sandbox mode is the default mode when compiling the wasm app to native. As i
 
 ```bash
 # Example of compiling wasm app to native object file in sandbox mode
-${WASM2NATIVE_CMD} --format=object --heap-size=16384 -o main.o main.wasm
+./wasm2native --format=object --heap-size=16384 -o main.o main.wasm
 ```
 
 In the sandbox mode, the native binary object file will export the API defined in `w2n_export.h`, you can use them in the host native binary to interact with the wasm app, such as `wasm_instance_create`, `wasm_get_export_apis` can be used to lookup the wasm function and then call it. You can also get exceptions, the base address and size of linear memory, host-managed heap information, etc.
@@ -72,7 +72,7 @@ In the no-sandbox mode, the Wasm sandbox is discarded, and the Wasm address spac
 
 ```bash
 # Example of compiling wasm app to native object file in no-sandbox mode
-${WASM2NATIVE_CMD} --format=object --no-sandbox-mode -o nomain_nosandbox.o nomain.wasm
+./wasm2native --format=object --no-sandbox-mode -o nomain_nosandbox.o nomain.wasm
 ```
 
 > PS: Normally the wasm object file shouldn't have a main function since the main function normally is provided by the host native binary.

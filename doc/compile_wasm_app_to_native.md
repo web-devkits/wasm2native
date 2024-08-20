@@ -42,7 +42,7 @@ gcc -O3 -o test_mem64 test_mem64.o -L ../build -lvmlib
 gcc -O3 -o test_mem64_nosandbox test_mem64_nosandbox.o -L ../build -lnosandbox -lm
 ```
 
-For more detail about the difference between two modes `sandbox` and `no-sandbox`, please refer to [embed_compiled_native.md](./embed_compiled_native.md).
+For more details about the difference between two modes `sandbox` and `no-sandbox`, please refer to [embed_compiled_native.md](./embed_compiled_native.md).
 
 After linking, you can execute the generated executable file like a normal executable, whether in sandbox mode or non-sandbox mode.
 
@@ -69,10 +69,10 @@ Additionally, in **sandbox** mode, you can
   0x7:i32
   ```
 
-For more detail on those two usages, you can refer to the help message by running the command with `--help` option.
+For more details on those two usages, you can refer to the help message by running the command with `--help` option.
 
 ```bash
-# For more detail show the help message
+# For more details show the help message
 ./test_mem32 --help
 ```
 
@@ -80,7 +80,7 @@ For more detail on those two usages, you can refer to the help message by runnin
 
 Like a normal object file, you can link it with the auxiliary library `libvmlib` or `libnosandbox` to generate the shared library.
 
-> PS: when compiling auxiliary libraries, don't add the CMake flag `-DW2N_BUILD_WASM_APPLICATION=1` like in other examples, this option will exclude the main.c and wasm_application.c from the `vmlib` library build source list.
+> PS: when compiling auxiliary libraries, don't add the CMake flag `-DW2N_BUILD_WASM_APPLICATION=1` like in other examples, this option will add the main.c and wasm_application.c into the `vmlib` library build source list.
 
 ```bash
 # link object file and vmlib library to generate the shared library for sandbox mode
